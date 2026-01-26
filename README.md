@@ -2,7 +2,7 @@
 # PROJECT NAME Väinämöinen
 # Group information
 * Student 1. Akseli Ahonpera aahonper20@student.oulu.fi
-* Student 2. Tino Marttila 
+* Student 2. Tino Marttila tmarttil22@student.oulu.fi
 * Student 3. Miro Sirviö
 
 
