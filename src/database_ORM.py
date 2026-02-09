@@ -12,30 +12,34 @@ db = SQLAlchemy(app)
 
 class users(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sensor = db.Column(db.String(20), nullable=False)
-    value = db.Column(db.Float, nullable=False)
-    time = db.Column(db.DateTime, nullable=False)
-
+    username = db.Column(db.String(20), nullable=False)
+    password= db.Column(db.String, nullable=False)
+    email = db.Column(db.String, nullable=False)
+    address = db.Column(db.String, nullable=False)
+    phoneNumber = db.Column(db.String, nullable=False)
+    description = db.Column(db.String(255), nullable=False)
+    created = db.Column(db.DateTime, nullable=False)
 
 class jobs(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    sensor = db.Column(db.String(20), nullable=False)
-    value = db.Column(db.Float, nullable=False)
-    time = db.Column(db.DateTime, nullable=False)
-
-
-
+    userID = db.Column(db.String(20), nullable=False)
+    jobDescription = db.Column(db.String(255), nullable=False)
+    timetable = db.Column(db.String, nullable=True)
+    location = db.Column(db.String,nullable=False)
+    created = db.Column(db.DateTime,nullable=False)
+    opening_hours = db.Column(db.String,nullable=False)
+    category = db.Column(db.String,nullable=False)
 
 
 def createUserTable():
-
+    pass
 def createJobsTable():
-
+    pass
 
 def createDatabase():
-
+    pass
 def databaseExists():
-
+    pass
 
 def insertUser():
 
@@ -46,6 +50,6 @@ def insertUser():
 
 
 def insertJob():
-
+    pass
 
 
