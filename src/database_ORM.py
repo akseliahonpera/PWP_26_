@@ -3,7 +3,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import config
 from sqlalchemy_utils import database_exists
-from sqlalchemy.sql import func
 
 app = Flask(__name__)
 
@@ -54,12 +53,12 @@ def insertUser(user_packet):
     try:
         with app.app_context():
             user_record = User(
-                username= user_packet["username"], 
-                password= user_packet["password"],
-                email= user_packet["email"],
-                address= user_packet["address"],
-                phoneNumber= user_packet["phoneNumber"],
-                description= user_packet["description"]
+                username= user_packet["username"],  # type: ignore
+                password= user_packet["password"], # type: ignore
+                email= user_packet["email"], # type: ignore
+                address= user_packet["address"], # type: ignore
+                phoneNumber= user_packet["phoneNumber"], # type: ignore
+                description= user_packet["description"] # type: ignore
                 )
             db.session.add(user_record)
             db.session.commit()
@@ -74,14 +73,14 @@ def insertJob(job_packet):
     try: 
         with app.app_context():
             job_record = Job(
-            userID = job_packet["userID"],
-            jobDescription = job_packet["jobDescription"],
-            timetable = job_packet["timetable"],
-            location = job_packet["location"],
-            created = job_packet["created"],
-            opening_hours = job_packet["opening_hours"],
-            category = job_packet["category"]
-            )
+            userID = job_packet["userID"], # type: ignore
+            jobDescription = job_packet["jobDescription"], # type: ignore
+            timetable = job_packet["timetable"], # type: ignore
+            location = job_packet["location"], # type: ignore
+            created = job_packet["created"], # type: ignore
+            opening_hours = job_packet["opening_hours"], # type: ignore
+            category = job_packet["category"] # type: ignore
+            ) 
             db.session.add(job_record)
             db.session.commit()
             return True
@@ -110,6 +109,65 @@ job_test_packet = {
     "category": "Hospitality"
 }
 ###chatGPT ends
+
+
+def query_user(query_packet):
+    try:
+        with app.app_context():
+
+            return True
+    except Exception as e:
+        print("qieru failed ", e)
+        return False
+    
+def query_job():
+    try:
+        with app.app_context():
+
+            return True
+    except Exception as e:
+        print("qieru failed ", e)
+        return False
+
+def delete_job(job_id):
+    try:
+        with app.app_context():
+
+            return True
+    except Exception as e:
+        print("qieru failed ", e)
+        return False
+
+def delete_user(user_id):
+    try:
+        with app.app_context():
+
+            return True
+    except Exception as e:
+        print("qieru failed ", e)
+        return False
+
+def update_job(job_id):
+    try:
+        with app.app_context():
+
+            return True
+    except Exception as e:
+        print("qieru failed ", e)
+        return False
+
+def update_user(user_id):
+    try:
+        with app.app_context():
+
+            return True
+    except Exception as e:
+        print("qieru failed ", e)
+        return False
+
+
+
+
 
 
 def main():
