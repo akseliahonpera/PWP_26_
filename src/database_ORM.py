@@ -132,7 +132,9 @@ def query_job():
 def delete_job(job_id):
     try:
         with app.app_context():
-
+            job = Job.query.filter_by(id=job_id)
+            db.session.delete(job)
+            db.session.commit()
             return True
     except Exception as e:
         print("qieru failed ", e)
@@ -141,10 +143,12 @@ def delete_job(job_id):
 def delete_user(user_id):
     try:
         with app.app_context():
-
+            user = User.query.filter_by(id=user_id)
+            db.session.delete(user)
+            db.session.commit()
             return True
     except Exception as e:
-        print("qieru failed ", e)
+        print("deletion failed ", e)
         return False
 
 def update_job(job_id):
