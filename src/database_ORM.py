@@ -154,19 +154,27 @@ def delete_user(user_id):
 def update_job(job_id):
     try:
         with app.app_context():
-
+            
             return True
     except Exception as e:
         print("qieru failed ", e)
         return False
 
-def update_user(user_id):
+def update_user(user_packet):
+    """"Gets user data as json, locates it and makes changes according to the new packet"""
     try:
         with app.app_context():
-
+            temp_user = User.query.filter_by(username=user_packet["username"], password=user_packet["password"])
+            temp_user.username= user_packet["username"],  # type: ignore
+            temp_user.password= user_packet["password"], # type: ignore
+            temp_user.email= user_packet["email"], # type: ignore
+            temp_user.address= user_packet["address"], # type: ignore
+            temp_user.phoneNumber= user_packet["phoneNumber"], # type: ignore
+            temp_user.description= user_packet["description"] # type: ignore
+            db.session.commit()
             return True
     except Exception as e:
-        print("qieru failed ", e)
+        print("query failed ", e)
         return False
 
 
