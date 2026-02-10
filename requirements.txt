@@ -1,8 +1,8 @@
 This software is still kinda garrrrrrbage so sorry but it requires following:
 
 MYSQL server running on localhost
-
-- install with pip
+Create database to the MYSQL server through MYSQL shell by using CREATE DATABASE IF NOT EXISTS <yourdb>. I am still too stupid to make it work automatically with mysql. 
+- install following with pip
 datetime
 flask
 flask_sqlalchemy
@@ -15,7 +15,7 @@ MYSQL_HOST = "localhost"    //- default
 MYSQL_USER = "root"         //- default for MYSQL 8.0 atleast, if you have other profiles then use whatever you like
 MYSQL_PASSWORD = ""         //- your mysql server password
 MYSQL_PORT = "3306"         //- default MYSQL
-MYSQL_DB = ""               //- your desired name
+MYSQL_DB = ""               //- your desired name for the database as in line 4 <yourdb>
 SECRET_KEY = ""             //- irrelevant in this
 
 
