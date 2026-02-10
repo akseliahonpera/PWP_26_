@@ -109,24 +109,24 @@ job_test_packet = {
 ###chatGPT ends
 
 
-def query_user(user_query):
+def query_user(getRequest):
+    """WIP get all users currently only"""
     try:
-        with app.app_context():
-
-            return True
+        with app.app_context(): 
+            return User.query.all()
     except Exception as e:
         print("qieru failed ", e)
-        return False
+        return -1
     
 def query_job(job_query):
-    """Query job by generic parameters"""
+    """Query all jobs currently"""
     try:
         with app.app_context():
 
-            return True
+            return Job.query.all()
     except Exception as e:
         print("qieru failed ", e)
-        return False
+        return -1
 
 def delete_job(job_id):
     """Delete by id"""
