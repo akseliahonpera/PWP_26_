@@ -1,7 +1,10 @@
-This software is still kinda garrrrrrbage so sorry but it requires following:
+This software is requires following:
 
 MYSQL server running on localhost
-Create database to the MYSQL server through MYSQL shell by using CREATE DATABASE IF NOT EXISTS <yourdb>. I am still too stupid to make it work automatically with mysql. 
+Create database to the MYSQL server through MYSQL shell by using CREATE DATABASE IF NOT EXISTS <yourdb>.
+
+Populate the database by running the database_ORM.py directly or by using source <resource_path> for the dump file in test_dumpfiles_db folder.
+ 
 - install following with pip
 datetime
 flask
