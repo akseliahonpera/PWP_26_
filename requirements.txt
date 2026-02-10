@@ -1,0 +1,21 @@
+This software is still kinda garrrrrrbage so sorry but it requires following:
+
+MYSQL server running on localhost
+
+- install with pip
+datetime
+flask
+flask_sqlalchemy
+sqlalchemy_utils
+
+
+Make yourself a config.py file to the src folder.
+
+MYSQL_HOST = "localhost"    //- default
+MYSQL_USER = "root"         //- default for MYSQL 8.0 atleast, if you have other profiles then use whatever you like
+MYSQL_PASSWORD = ""         //- your mysql server password
+MYSQL_PORT = "3306"         //- default MYSQL
+MYSQL_DB = ""               //- your desired name
+SECRET_KEY = ""             //- irrelevant in this
+
+
