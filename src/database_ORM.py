@@ -3,7 +3,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import config
 from sqlalchemy_utils import database_exists
-
+import random 
 app = Flask(__name__)
 app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -13,7 +13,7 @@ db = SQLAlchemy(app)
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(20), unique= False, nullable=False) ##set unique to false to test
+    username = db.Column(db.String(32), unique= False, nullable=False) ##set unique to false to test
     password= db.Column(db.String(32), nullable=False)
     email = db.Column(db.String(63), unique= False, nullable=False) ##set unique to false to test
     address = db.Column(db.String(63), nullable=False)
@@ -86,27 +86,6 @@ def insertJob(job_packet):
         print("insert job failure", e)
         return False
 
-
-###chatGPT
-user_test_packet = {
-    "username": "testuser123",
-    "password": "securepassword123",  # hash this later if you haven't yet
-    "email": "testuser@example.com",
-    "address": "123 Main Street, Springfield",
-    "phoneNumber": "555-123-4567",
-    "description": "Test user account for database insertion"
-}
-
-job_test_packet = {
-    "userID": 1,  # make sure this user ID exists in your User table
-    "jobDescription": "Looking for a part-time barista for weekend shifts",
-    "timetable": "Weekends 8am–2pm",
-    "location": "Downtown Cafe, Springfield",
-    "created": "2026-02-09",  # or datetime.utcnow() if your model expects a datetime
-    "opening_hours": "08:00-14:00",
-    "category": "Hospitality"
-}
-###chatGPT ends
 
 
 def query_user(getRequest):
@@ -197,16 +176,48 @@ def update_user(user_packet):
 
 
 
+###chatGPT
+user_test_packet = {
+    "username": "testuser",
+    "password": "securepassword123",  # hash this later if you haven't yet
+    "email": "testuser@example.com",
+    "address": "123 Main Street, Springfield",
+    "phoneNumber": "555-123-4567",
+    "description": "Test user account for database insertion"
+}
 
+job_test_packet = {
+    "userID": 1,  # make sure this user ID exists in your User table
+    "jobDescription": "Looking for a part-time barista for weekend shifts",
+    "timetable": "Weekends 8am–2pm",
+    "location": "Downtown Cafe, Springfield",
+    "created": "2026-02-09",  # or datetime.utcnow() if your model expects a datetime
+    "opening_hours": "08:00-14:00",
+    "category": "Hospitality"
+}
+###chatGPT ends
+
+def populate_database():
+    """Function for populating the database users and jobs, change values on the size you want"""
+    samplesize = 50
+    userdata= user_test_packet
+    runningNumber_user = userdata["username"]
+    jobdata= job_test_packet
+    for i in range(samplesize):
+        userdata["username"] = runningNumber_user+f'": "+{i}'
+        print(" UUUUSERNAMEEEESSS::        "+userdata["username"])
+        insertUser(userdata)
+
+    for i in range(samplesize-25):
+        randomUser= random.randrange(1,samplesize-25)
+        print(randomUser)
+        jobdata["userID"]= randomUser
+        insertJob(jobdata)
 
 def main():
     init()
+    populate_database()
 
-    userdata= user_test_packet
-    insertUser(userdata)
-
-    jobdata= job_test_packet
-    insertJob(jobdata)
 
 
 
