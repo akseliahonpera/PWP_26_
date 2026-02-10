@@ -5,10 +5,8 @@ import config
 from sqlalchemy_utils import database_exists
 
 app = Flask(__name__)
-
 app.config["SQLALCHEMY_DATABASE_URI"]= "mysql+pymysql://root:Gambiinakiuas522@localhost:3306/pwp26?charset=utf8mb4"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-
 db = SQLAlchemy(app)
 
 
@@ -111,7 +109,7 @@ job_test_packet = {
 ###chatGPT ends
 
 
-def query_user(query_packet):
+def query_user(user_query):
     try:
         with app.app_context():
 
@@ -120,7 +118,8 @@ def query_user(query_packet):
         print("qieru failed ", e)
         return False
     
-def query_job():
+def query_job(job_query):
+    """Query job by generic parameters"""
     try:
         with app.app_context():
 
@@ -130,6 +129,7 @@ def query_job():
         return False
 
 def delete_job(job_id):
+    """Delete by id"""
     try:
         with app.app_context():
             job = Job.query.filter_by(id=job_id)
@@ -141,6 +141,7 @@ def delete_job(job_id):
         return False
 
 def delete_user(user_id):
+    """Delete user by id"""
     try:
         with app.app_context():
             user = User.query.filter_by(id=user_id)
@@ -151,17 +152,33 @@ def delete_user(user_id):
         print("deletion failed ", e)
         return False
 
-def update_job(job_id):
+def update_job(job_id, job_packet):    
+    """ Kinda unsafe.
+        Make sure only authorized users can access this per job!! 
+        Locate job by given id and change according to the job packet
+    """
     try:
         with app.app_context():
+            temp_job = Job.query.filter_by(id=job_id)
+            temp_job.userID = job_packet["userID"], # type: ignore
+            temp_job.jobDescription = job_packet["jobDescription"], # type: ignore
+            temp_job.timetable = job_packet["timetable"], # type: ignore
+            temp_job.location = job_packet["location"], # type: ignore
+            temp_job.opening_hours = job_packet["opening_hours"], # type: ignore
+            temp_job.category = job_packet["category"] # type: ignore
             
+            db.session.add(temp_job)
+            db.session.commit()
             return True
     except Exception as e:
         print("qieru failed ", e)
         return False
 
 def update_user(user_packet):
-    """"Gets user data as json, locates it and makes changes according to the new packet"""
+    """ Kinda unsafe.
+        Make sure only authorized users can access this per user!! 
+        Gets user data as json dict, locates user and makes changes according to the new packet,shitty
+    """
     try:
         with app.app_context():
             temp_user = User.query.filter_by(username=user_packet["username"], password=user_packet["password"])
