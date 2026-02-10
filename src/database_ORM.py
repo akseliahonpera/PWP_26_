@@ -5,7 +5,7 @@ import config
 from sqlalchemy_utils import database_exists
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"]= "mysql+pymysql://root:Gambiinakiuas522@localhost:3306/pwp26?charset=utf8mb4"
+app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
