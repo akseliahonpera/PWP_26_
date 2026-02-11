@@ -21,19 +21,19 @@ class User(db.Model):
     phoneNumber = db.Column(db.String(31), nullable=False)
     description = db.Column(db.String(255), nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
-    jobs = db.relationship("Job", back_populates = "user")###relation
+    jobs = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
 class Job(db.Model):
     __tablename__ = 'jobs'
     id = db.Column(db.Integer, primary_key=True)
-    userID = db.Column(db.Integer, db.ForeignKey(User.id),  nullable=False)
+    userID = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
     jobDescription = db.Column(db.String(255), nullable=False)
     timetable = db.Column(db.String(63), nullable=True)
     location = db.Column(db.String(63),nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
-    user = db.relationship("User", back_populates = "jobs")###relation
+    user = db.relationship("User",  back_populates = "jobs")###relation
 
 def init():
     createDatabase()
@@ -112,12 +112,13 @@ def delete_job(job_id):
     """Delete by id"""
     try:
         with app.app_context():
-            job = Job.query.filter_by(id=job_id)
+            job = Job.query.filter_by(id=job_id).first()
             db.session.delete(job)
             db.session.commit()
+            print("Job deletion succesfull")
             return True
     except Exception as e:
-        print("qieru failed ", e)
+        print("job deletion failed ", e)
         return False
 
 def delete_user(user_id):
@@ -125,14 +126,15 @@ def delete_user(user_id):
     try:
         with app.app_context():
             print("q1")
-            user = User.query.filter_by(id=user_id)
+            user = User.query.filter_by(id=user_id).first()
             print("q2 ")
             print(user)
             db.session.delete(user)
             db.session.commit()
+            print("user deletion succesfull")
             return True
     except Exception as e:
-        print("deletion failed ", e)
+        print("user deletion failed, try cascading delete?", e)
         return False
 
 def update_job(job_id, job_packet):    
