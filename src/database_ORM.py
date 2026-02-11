@@ -1,10 +1,11 @@
 import datetime
-from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import config
 from sqlalchemy_utils import database_exists
 import random 
-app = Flask(__name__)
+
+from app import app
+
 app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
@@ -40,7 +41,7 @@ def init():
 
 def createDatabase(): #tables actually, 
     with app.app_context():
-        if database_exists("mysql+pymysql://root:Gambiinakiuas522@localhost:3306/pwp26?charset=utf8mb4"):
+        if database_exists(f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'):
             db.create_all()
         else:
             print("database does not exist")
@@ -123,7 +124,10 @@ def delete_user(user_id):
     """Delete user by id"""
     try:
         with app.app_context():
+            print("q1")
             user = User.query.filter_by(id=user_id)
+            print("q2 ")
+            print(user)
             db.session.delete(user)
             db.session.commit()
             return True
@@ -215,9 +219,8 @@ def populate_database():
         insertJob(jobdata)
 
 def main():
+    """test for populating the database by running this module dircetly. """
     init()
-    populate_database()
-
 
 
 
