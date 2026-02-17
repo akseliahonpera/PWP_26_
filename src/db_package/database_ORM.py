@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), unique= False, nullable=False) ##set unique to false to test
+    username = db.Column(db.String(32), unique= True, nullable=False) ##set unique to false to test
     password= db.Column(db.String(32), nullable=False)
     email = db.Column(db.String(63), unique= False, nullable=False) ##set unique to false to test
     address = db.Column(db.String(63), nullable=False)
@@ -50,6 +50,7 @@ def init():
 
 
 def createDatabase(): #tables actually, 
+    """Creates all tables(defined models related to db) to the database, if this fails create the database itself first."""
     with app.app_context():
         if database_exists(f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'):
             db.create_all()
@@ -263,13 +264,15 @@ def update_job(job_id, job_packet):
         print("qieru failed ", e)
         return False
 
-def update_user(user_packet):
+def update_user(user_id,user_packet):
     """ Kinda unsafe.
         Make sure only authorized users can access this per user!! 
         Gets user data as json dict, locates user and makes changes according to the new packet,shitty
     """
     try:
         with app.app_context():
+
+
             temp_user = User.query.filter_by(username=user_packet["username"], password=user_packet["password"])
             temp_user.username= user_packet["username"],  # type: ignore
             temp_user.password= user_packet["password"], # type: ignore

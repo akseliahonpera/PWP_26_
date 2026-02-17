@@ -13,18 +13,22 @@ user_test_packet2 = {'id': 4,}
 
 ##For testing the database
 def main():
+    testfunction()
+ 
+
+def testfunction():
     database_ORM.createDatabase()
-    #database_ORM.populate_database()
-    #print("attempt deletion of job")
-    #database_ORM.delete_job(3)
-    #print("attempt deletion of user")
-    #database_ORM.delete_user(2)
+    database_ORM.populate_database()
+    print("attempt deletion of job")
+    database_ORM.delete_job(3)
+    print("attempt deletion of user")
+    database_ORM.delete_user(2)
     
     print("test query all ")
-   # jobs = database_ORM.query_job_all(None)
+    jobs = database_ORM.query_job_all()
 
-   # for job in jobs: # type: ignore
-    #    print(job)
+    for job in jobs: # type: ignore
+        print(job)
     
     print("test query by generic ")
     jobs = database_ORM.query_job(job_test_packet2)
@@ -33,10 +37,9 @@ def main():
         print(job)
     print("test query users by generic dict")
     users = database_ORM.query_user(user_test_packet2)
+    print("Print queryresults")
     for user in users: # type: ignore
         print(user)
-
-
 
 
 if __name__ == "__main__":
