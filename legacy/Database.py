@@ -2,9 +2,9 @@ from flask import Flask, render_template, request, redirect, url_for,session
 from flask_mysqldb import MySQL 
 import MySQLdb.cursors
 import re
-import config
+import config # type: ignore
 app = Flask(__name__)
-
+## Note that import paths are not working from this location.
 
 app.secret_key = config.SECRET_KEY
 
@@ -94,7 +94,7 @@ def insert_to_user_table():
     NotImplementedError
 def insert_to_job_table():
     NotImplementedError
-
+    
 def main():
     print("start main")
     #app.run()

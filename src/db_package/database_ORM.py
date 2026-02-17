@@ -1,4 +1,5 @@
 import datetime
+from flask import jsonify
 from flask_sqlalchemy import SQLAlchemy
 import config
 from sqlalchemy_utils import database_exists
@@ -25,6 +26,15 @@ class User(db.Model):
 
 class Job(db.Model):
     __tablename__ = 'jobs'
+    id: int
+    userID: int
+    jobDescription:str
+    timetable:str
+    location:str
+    created:str
+    opening_hours:str
+    category:str
+
     id = db.Column(db.Integer, primary_key=True)
     userID = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
     jobDescription = db.Column(db.String(255), nullable=False)
@@ -48,7 +58,7 @@ def createDatabase(): #tables actually,
     
 
 def insertUser(user_packet):
-    """"Gets dictionary of user values"""
+    """"Gets dictionary of uservalues as parameter. Returns true or false depending on success."""
     try:
         with app.app_context():
             user_record = User(
@@ -68,7 +78,7 @@ def insertUser(user_packet):
 
 
 def insertJob(job_packet):
-    """"Gets dictionary of job values"""
+    """"Gets dictionary of job values as parameter. Returns true or false depending on success."""
     try: 
         with app.app_context():
             job_record = Job(
@@ -87,26 +97,120 @@ def insertJob(job_packet):
         print("insert job failure", e)
         return False
 
-
-
-def query_user(getRequest):
-    """WIP get all users currently only"""
+def query_user_all():
+    """Returns all users as list[dictionary]
+    """
     try:
         with app.app_context(): 
-            return User.query.all()
+            user_rs= User.query.all()
+            result_dict_list = []
+             ##serialize to json list (dict)
+            for i in user_rs:
+                user_dict= {}
+                user_dict["id"] = i.id
+                user_dict["username"] = i.username
+                user_dict["password"] = i.password
+                user_dict["email"] = i.email
+                user_dict["address"] = i.address
+                user_dict["phoneNumber"] = i.phoneNumber
+                user_dict["description"] = i.description
+                user_dict["created"] = str(i.category)
+                result_dict_list.append(user_dict)
+            #print(querything)
+            return result_dict_list
+
+
+
     except Exception as e:
         print("qieru failed ", e)
         return -1
     
-def query_job(job_query):
-    """Query all jobs currently"""
+#https://stackoverflow.com/questions/6718480/sqlalchemy-orm-declarative-how-to-build-query-from-key-values-in-a-dict?rq=3
+def query_user(http_query_params):
+    """Dynamic/Generic query method. 
+    Takes json object/python dict as parameter, which contains the query data for the user.
+        eg. {'id': 4,}
+    Returns results as List[dictionary]
+    """
     try:
-        with app.app_context():
+        with app.app_context(): 
+            user_rs= db.session.query(User).filter_by(**http_query_params).all()
+            result_dict_list = []
+             ##serialize to json list (dict)
+            for i in user_rs:
+                user_dict= {}
+                user_dict["id"] = i.id
+                user_dict["username"] = i.username
+                user_dict["password"] = i.password
+                user_dict["email"] = i.email
+                user_dict["address"] = i.address
+                user_dict["phoneNumber"] = i.phoneNumber
+                user_dict["description"] = i.description
+                user_dict["created"] = str(i.created)
+                result_dict_list.append(user_dict)
+            #print(querything)
+            return result_dict_list
 
-            return Job.query.all()
     except Exception as e:
         print("qieru failed ", e)
         return -1
+
+
+    
+def query_job_all():
+    """Query all jobs currently, Returns list[dict] of jobs"""
+    try:
+        with app.app_context():
+
+            job_rs= Job.query.all()
+            result_dict_list = []
+             ##serialize to json list
+            for i in job_rs:
+                job_dict= {}
+                job_dict["id"] = i.id
+                job_dict["userID"] = i.userID
+                job_dict["jobDescription"] = i.jobDescription
+                job_dict["timetable"] = i.timetable
+                job_dict["ocation"] = i.location
+                job_dict[""] = str(i.created)
+                job_dict["pening_hours"] = i.opening_hours
+                job_dict["category"] = i.category
+                result_dict_list.append(job_dict)
+            #print(querything)
+            return result_dict_list
+        
+    except Exception as e:
+        print("qieru failed ", e)
+        return -1
+    
+def query_job(http_query_params):
+    """takes dictionary as parameter, builds query based on that"""
+    print("Try job querying.")
+    try:
+        with app.app_context():
+            
+            querything = db.session.query(Job).filter_by(**http_query_params).all()
+            result_json_list = []
+            ##serialize to json list
+            for i in querything:
+                job_dict= {}
+                job_dict["id"] = i.id
+                job_dict["userID"] = i.userID
+                job_dict["jobDescription"] = i.jobDescription
+                job_dict["timetable"] = i.timetable
+                job_dict["ocation"] = i.location
+                job_dict[""] = str(i.created)
+                job_dict["pening_hours"] = i.opening_hours
+                job_dict["category"] = i.category
+                result_json_list.append(job_dict)
+            #print(querything)
+            return result_json_list
+
+    except Exception as e:
+        print("query failed ", e)
+        return -1
+
+
 
 def delete_job(job_id):
     """Delete by id"""
@@ -144,7 +248,7 @@ def update_job(job_id, job_packet):
     """
     try:
         with app.app_context():
-            temp_job = Job.query.filter_by(id=job_id)
+            temp_job = Job.query.filter_by(id=job_id).first()
             temp_job.userID = job_packet["userID"], # type: ignore
             temp_job.jobDescription = job_packet["jobDescription"], # type: ignore
             temp_job.timetable = job_packet["timetable"], # type: ignore
