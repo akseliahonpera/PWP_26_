@@ -1,6 +1,6 @@
 
 import datetime
-import database_ORM
+from db_package import database_ORM
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import config
