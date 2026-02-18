@@ -97,6 +97,7 @@ def insertJob(job_packet):
     except Exception as e:
         print("insert job failure", e)
         return False
+    return False
 
 def query_user_all():
     """Returns all users as list[dictionary]
@@ -125,6 +126,7 @@ def query_user_all():
     except Exception as e:
         print("qieru failed ", e)
         return -1
+    return -1
     
 #https://stackoverflow.com/questions/6718480/sqlalchemy-orm-declarative-how-to-build-query-from-key-values-in-a-dict?rq=3
 def query_user(http_query_params):
@@ -155,6 +157,7 @@ def query_user(http_query_params):
     except Exception as e:
         print("qieru failed ", e)
         return -1
+    return -1
 
 
     
@@ -183,6 +186,7 @@ def query_job_all():
     except Exception as e:
         print("qieru failed ", e)
         return -1
+    return -1
     
 def query_job(http_query_params):
     """takes dictionary as parameter, builds query based on that"""
