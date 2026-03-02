@@ -23,6 +23,60 @@ class User(db.Model):
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     jobs = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
+    def serialize(self, include_jobs=False):
+        user = {"username":self.username}
+        user["email"]=self.email
+        user["address"]=self.address
+        user["phoneNumber"]=self.phoneNumber
+        user["description"]= self.description
+        user["created"] = self.created
+        if include_jobs:
+            user["jobs"] = []
+            for job in self.jobs: # type: ignore
+                user["jobs"].append(job)
+        return user
+    
+    def deserialize(self, user):
+        self.username = user["username"]
+        self.email = user["email"]
+        self.address = user["address"]
+        self.phoneNumber = user["phoneNumber"]
+        self.description = user["description"]
+        self.created = user["created"]
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["username", "password","email","address","phoneNumber","description"]
+        }
+        props = schema["properties"] = {}
+        props["username"] = {
+            "description": "Users unique username",
+            "type": "string"
+        }
+        props["password"] = {
+            "description": "users password, to be hashed by hashing and salting algo",
+            "type": "string"
+        }
+        props["email"] = {
+            "description": "users unique email",
+            "type": "string"
+        }
+        props["address"] = {
+            "description": "users address",
+            "type": "string"
+        }
+        props["phoneNumber"] = {
+            "description": "users phonenumber",
+            "type": "string"
+        }
+        props["password"] = {
+            "description": "users description, bio",
+            "type": "string"
+        }
+        return schema
+
 class Job(db.Model):
     __tablename__ = 'jobs'
 
@@ -35,6 +89,60 @@ class Job(db.Model):
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
     user = db.relationship("User",  back_populates = "jobs")###relation
+
+    
+    def serialize(self):
+        job = {"id":self.id}
+        job["UserID"]=self.userID
+        job["jobDescription"]=self.jobDescription
+        job["location"]=self.location
+        job["created"]=self.created
+        job["opening_hours"]= self.opening_hours
+        job["category"] = self.category
+        job["user"] = self.user
+        return job
+    
+    def deserialize(self, job):
+        self.userID=job["UserID"]
+        self.jobDescription=job["jobDescription"]
+        self.location=job["location"]
+        self.created=job["created"]##????
+        self.opening_hours=job["opening_hours"]
+        self.category=job["category"]
+        self.user=job["user"]
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["userID", "jobDescription","location","opening_hours","category","user"]
+        }
+        props = schema["properties"] = {}
+        props["userID"] = {
+            "description": "Jobs unique uuserID",
+            "type": "string"
+        }
+        props["jobDescription"] = {
+            "description": "jobs jobDescription, to be hashed by hashing and salting algo",
+            "type": "string"
+        }
+        props["location"] = {
+            "description": "jobs location",
+            "type": "string"
+        }
+        props["opening_hours"] = {
+            "description": "opening_hours",
+            "type": "string"
+        }
+        props["category"] = {
+            "description": "category",
+            "type": "string"
+        }
+        props["user"] = {
+            "description": "user reference",
+            "type": "string"
+        }
+        return schema
 
 def init():
     createDatabase()
