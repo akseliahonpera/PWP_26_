@@ -6,10 +6,19 @@ from sqlalchemy_utils import database_exists
 import random 
 from app import app
 
-#These are instantiated when database.py is imported by api.
+###############################################################
+######### Database global for module use ######################
+###############################################################
 app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
 db = SQLAlchemy(app)
+
+
+
+###############################################################
+######### Models             ##################################
+###############################################################
+
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -89,7 +98,7 @@ class Job(db.Model):
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
     user = db.relationship("User",  back_populates = "jobs")###relation
-    timetable = db.relationship("Timetable", back_populates= "timetable", nullable=True)
+    timetable = db.relationship("Timetable", back_populates= "timetable")
     
     def serialize(self):
         job = {"id":self.id}
@@ -97,7 +106,7 @@ class Job(db.Model):
         job["job_name"]=self.job_name
         job["jobDescription"]=self.jobDescription
         job["location"]=self.location
-        job["created"]=self.created
+        job["created"]=self.created.isoformat()
         job["opening_hours"]= self.opening_hours
         job["category"] = self.category
         job["user"] = self.user
@@ -167,10 +176,10 @@ class Timetable(db.Model):
     def serialize(self):
         timetable = {"id":self.id}
         timetable["title"]=self.title
-        timetable["start_time"]=self.start_time
-        timetable["end_time"]=self.end_time
+        timetable["start_time"]=self.start_time.isoformat()
+        timetable["end_time"]=self.end_time.isoformat()
         timetable["is_booked"]=self.is_booked
-        timetable["created"]=self.created
+        timetable["created"]=self.created.isoformat()
         return timetable
     
     def deserialize(self, timetable):
@@ -207,10 +216,15 @@ class Timetable(db.Model):
 
 
 def init():
-    createDatabase()
+    instantiateDatabase()
 
 
-def createDatabase(): #tables actually, 
+###############################################################
+######### Database functions ##################################
+###############################################################
+
+
+def instantiateDatabase(): 
     """Creates all tables(defined models related to db) to the database, if this fails create the database itself first."""
     with app.app_context():
         if database_exists(f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'):
@@ -218,32 +232,48 @@ def createDatabase(): #tables actually,
             db.create_all()
         else:
             print("database does not exist")
-    
 
-def insertUser(user):
-    """"Gets user object as parameter. Returns true or false depending on success."""
+def createDataBase():
+    """If database does not yet exist, create database to the database engine. """
+    raise NotImplementedError
+
+###############################################################
+######### Insertions ##########################################
+###############################################################
+
+##USER RELATED
+def insertUser(request_json):
+    """"Gets user dict as parameter. Returns true or false depending on success."""
     try:
         with app.app_context():
+            user = User()
+            user.deserialize(request_json)
             db.session.add(user)
             db.session.commit()
-            return True
+            return user
     except Exception as e:
         print("failed to insert user", e)
-        return False
+        return None
 
-
-def insertJob(job):
+##JOB RELATED
+def insertJob(request_json):
     """"Gets job dict. Returns true or false depending on success."""
     try: 
         with app.app_context():
+            job = Job()
+            job.deserialize(request_json)
             db.session.add(job)
             db.session.commit()
-            return True
+            return job
     except Exception as e:
         print("insert job failure", e)
-        return False
-    return False
+        return None
 
+###############################################################
+######### Queries #############################################
+###############################################################
+
+##USER RELATED
 def query_user_all():
     """Returns all users as list[dictionary]
     """
@@ -251,7 +281,7 @@ def query_user_all():
         with app.app_context(): 
             user_rs= User.query.all()
             result_dict_list = []
-             ##serialize to json list (dict)
+            ##serialize to json list (dict)
             for i in user_rs:
                 result_dict_list.append(User.serialize(i))
             #print(querything)
@@ -259,11 +289,11 @@ def query_user_all():
 
     except Exception as e:
         print("query failed ", e)
-        return -1
-    return -1
+        return None
+
     
 #https://stackoverflow.com/questions/6718480/sqlalchemy-orm-declarative-how-to-build-query-from-key-values-in-a-dict?rq=3
-def query_user(http_query_params):
+def query_user(request_json):
     """Dynamic/Generic query method. 
     Takes json object/python dict as parameter, which contains the query data for the user.
         eg. {'id': 4,}
@@ -271,7 +301,7 @@ def query_user(http_query_params):
     """
     try:
         with app.app_context(): 
-            user_rs= db.session.query(User).filter_by(**http_query_params).all()
+            user_rs= db.session.query(User).filter_by(**request_json).all()
             result_dict_list = []
              ##serialize to json list (dict)
             for i in user_rs:
@@ -280,12 +310,10 @@ def query_user(http_query_params):
             return result_dict_list
 
     except Exception as e:
-        print("qieru failed ", e)
-        return -1
-    return -1
+        print("qiuery failed ", e)
+        return None
 
-
-    
+##JOB RELATED    
 def query_job_all():
     """Query all jobs currently, Returns list[dict] of jobs"""
     try:
@@ -296,20 +324,18 @@ def query_job_all():
             for i in job_rs:       
                 result_dict_list.append(Job.serialize(i))
             #print(querything)
-            return result_dict_list
-        
+            return result_dict_list 
     except Exception as e:
         print("qieru failed ", e)
-        return -1
-    return -1
+        return None
     
-def query_job(http_query_params):
+def query_job(request_json):
     """takes dictionary as parameter, builds query based on that"""
     print("Try job querying.")
     try:
         with app.app_context():
             
-            job_rs = db.session.query(Job).filter_by(**http_query_params).all()
+            job_rs = db.session.query(Job).filter_by(**request_json).all()
             result_dict_list = []
              ##serialize to json list
             for i in job_rs:       
@@ -319,39 +345,15 @@ def query_job(http_query_params):
 
     except Exception as e:
         print("query failed ", e)
-        return -1
+        return None
 
+###############################################################
+######### Delete functions   ##################################
+###############################################################
 
-
-def delete_job(job):
-    """Delete by job object"""
-    try:
-        with app.app_context():
-            db.session.delete(job)
-            db.session.commit()
-            print("Job deletion succesfull")
-            return True
-    except Exception as e:
-        print("job deletion failed ", e)
-        return False
-
-
-def delete_job_by_id(job_id):
-    """Delete by id"""
-    try:
-        with app.app_context():
-            job = Job.query.filter_by(id=job_id).first()
-            db.session.delete(job)
-            db.session.commit()
-            print("Job deletion succesfull")
-            return True
-    except Exception as e:
-        print("job deletion failed ", e)
-        return False
-
-
+##USER RELATED
 def delete_user(user):
-    """Delete user by id"""
+    """Delete user by object. Returns true if success, false otherwise"""
     try:
         with app.app_context():
 
@@ -365,7 +367,7 @@ def delete_user(user):
 
 
 def delete_user_by_id(user_id):
-    """Delete user by id"""
+    """Delete user by id. Returns true if success, false otherwise"""
     try:
         with app.app_context():
             print("q1")
@@ -380,38 +382,85 @@ def delete_user_by_id(user_id):
         print("user deletion failed, try cascading delete?", e)
         return False
 
-def update_job(job):    
-    """ Kinda unsafe.
-        Make sure only authorized users can access this per job!! 
-        Locate job by given id and change according to the job packet
-    """
+
+##JOB RELATED
+def delete_job_by_request_json(request_json):
+    """Delete job by request_json. Returns true if success, false otherwise"""
     try:
         with app.app_context():
-            job = Job.deserialize(job=job) # type: ignore
-            db.session.add(job)
+            job = Job.query.filter_by(job_name=request_json["job_name"]).first()
+            db.session.delete(job)
             db.session.commit()
+            print("Job deletion succesfull")
             return True
     except Exception as e:
-        print("qieru failed ", e)
+        print("job deletion failed ", e)
         return False
 
-def update_user(user):
-    """ Kinda unsafe.
+def delete_job(job):
+    """Delete by job object. Returns true if success, false otherwise"""
+    try:
+        with app.app_context():
+            db.session.delete(job)
+            db.session.commit()
+            print("Job deletion succesfull")
+            return True
+    except Exception as e:
+        print("job deletion failed ", e)
+        return False
+
+
+def delete_job_by_id(job_id):
+    """Delete by id. Returns true if success, false otherwise"""
+    try:
+        with app.app_context():
+            job = Job.query.filter_by(id=job_id).first()
+            db.session.delete(job)
+            db.session.commit()
+            print("Job deletion succesfull")
+            return True
+    except Exception as e:
+        print("job deletion failed ", e)
+        return False
+
+###############################################################
+######### Update functions   ##################################
+###############################################################
+ 
+##USER RELATED
+def update_user(user, request_json):
+    """ 
         Make sure only authorized users can access this per user!! 
-        Gets user data as json dict, locates user and makes changes according to the new packet,shitty
+        Gets update target user object and the update data as json dict, locates user and makes changes according to the new packet,shitty
     """
     try:
         with app.app_context():
-            user = User.deserialize(user) # type: ignore
-            db.session.add(user)
+            user = user.deserialize(request_json) 
             db.session.commit()
             return True
     except Exception as e:
         print("query failed ", e)
         return False
 
+##JOB RELATED
+def update_job(job, request_json):    
+    """ Kinda unsafe.
+        Make sure only authorized users can access this per job!! 
+        Locate job by given id and change according to the job packet
+    """
+    try:
+        with app.app_context():
+            job = job.deserialize(request_json)
+            db.session.commit()
+            return True
+    except Exception as e:
+        print("qieru failed ", e)
+        return False
+   
 
-
+###############################################################
+######### Testing stuff      ##################################
+###############################################################
 
 ###chatGPT
 user_test_packet = {

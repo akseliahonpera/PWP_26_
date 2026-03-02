@@ -14,7 +14,7 @@ def main():
 def testfunction():
     job_test_packet2 = {'id': 4,}
     user_test_packet2 = {'id': 4,}
-    Database.createDatabase()
+    Database.instantiateDatabase()
     Database.populate_database()
     print("attempt deletion of job")
     Database.delete_job(3)

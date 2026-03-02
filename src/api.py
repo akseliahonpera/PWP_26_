@@ -38,7 +38,7 @@ class UserItem(Resource):
         except ValidationError as e:
             raise BadRequest(description=str(e))
         try:
-            Database.update_user(user)
+            Database.update_user(user, request.json)
         except IntegrityError:
             raise Conflict(
                 description="Something shitty happened"
@@ -53,9 +53,7 @@ class UserItem(Resource):
         except ValidationError as e:
             raise BadRequest(description=str(e))
         try:
-            tempuser = Database.User()
-            user= tempuser.deserialize(request.json)
-            Database.insertUser(user)
+            Database.insertUser(request.json)
         except IntegrityError:
             raise Conflict(
                 description="User with name '{username}' already in service".format(
@@ -82,9 +80,7 @@ class UserCollection(Resource):
         except ValidationError as e:
             raise BadRequest(description=str(e))
         try:
-            user = Database.User()
-            user.deserialize(request.json)
-            Database.insertUser(user)
+            user = Database.insertUser(request.json)
         except IntegrityError:
             raise Conflict(
                 description="User with name '{username}' already in service".format(
