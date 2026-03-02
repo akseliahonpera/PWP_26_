@@ -98,40 +98,73 @@ class UserCollection(Resource):
 class JobCollection(Resource):
 
     def get(self, job):
-        pass
+        jobs = Database.query_job_all()
+        return jobs
 
-    def put(self, job):
-        pass
 
     def post(self, job):
-        pass
+        if not request.json:
+            raise UnsupportedMediaType
+        try:
+            validate(request.json, Database.Job.json_schema())
+        except ValidationError as e:
+            raise BadRequest(description=str(e))
+        
+        job = Database.Job()
+        job.deserialize(request.json)
+        try:
+            Database.insertJob(job)
 
-    def delete(self, job):
-        pass
+        except IntegrityError:
+            raise Conflict(
+                description="joku vittuilee jobcollection postissa"
+            )
+        return Response(status=201, headers={"Location":api.url_for(JobItem, job=job)})
+        
+
+
 
 #implement these
 class JobItem(Resource):
 
     def get(self, job):
-        pass
+        return Database.User.serialize(job)
 
     def put(self, job):
         pass
 
     def post(self, job):
-        pass
+        if not request.json:
+            raise UnsupportedMediaType
+        try:
+            validate(request.json, Database.Job.json_schema())
+        except ValidationError as e:
+            raise BadRequest(description=str(e))
+        
+        try:
+            Database.insertJob(job)
+        except IntegrityError:
+            raise Conflict(
+                description="something shitty happened in jobitem post"
+            )
+        return Response(status=204)
 
     def delete(self, job):
-        pass
+        if Database.delete_job(job):
+            return Response(status=204)
+        return Response(status=400)
 
 ##Converters
 class JobConverter(BaseConverter):
 
     def to_python(self, job_name): # type: ignore #id?
-        pass
-
-    def to_url(self, db_sensor): # type: ignore
-        pass
+        job = Database.query_job({"job_name":job_name})
+        if job is None:
+            raise NotFound
+        return job
+    
+    def to_url(self, job): # type: ignore
+        return Database.Job.serialize(job)["job_name"]
 
 
 class UserConverter(BaseConverter):
@@ -148,7 +181,7 @@ class UserConverter(BaseConverter):
 app.url_map.converters["job"] = JobConverter
 app.url_map.converters["user"] = UserConverter
 #tänne seuraavat
-api.add_resource(JobCollection, "api/Jobs")
+api.add_resource(JobCollection, "api/jobs")
 api.add_resource(JobItem, "api/jobs/<JobItem>")
 api.add_resource(UserCollection, "api/users")
 api.add_resource(UserItem, "api/users/<UserItem>")
