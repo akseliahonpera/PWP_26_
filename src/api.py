@@ -67,17 +67,29 @@ class UserItem(Resource):
         return Response(status=400)
 
 class UserCollection(Resource):
-    def get(self, user):
-        pass
+    def get(self):
+        users = Database.query_user_all()
+        return users
 
-    def put(self, user):
-        pass
+    def post(self):
+        if not request.json:
+            raise UnsupportedMediaType
+        try: 
+            validate(request.json, Database.User.json_schema())
+        except ValidationError as e:
+            raise BadRequest(description=str(e))
+        try:
+            user = Database.User()
+            user.deserialize(request.json)
+            Database.insertUser(user)
+        except IntegrityError:
+            raise Conflict(
+                description="User with name '{username}' already in service".format(
+                    **request.json
+                )
+            )
+        return Response(status=201, headers={"Location":api.url_for(UserItem, user=user)})
 
-    def post(self, user):
-        pass
-
-    def delete(self, user):
-        pass
 
 
 ##Job resources
@@ -125,10 +137,13 @@ class JobConverter(BaseConverter):
 class UserConverter(BaseConverter):
 
     def to_python(self, user_name): # type: ignore #id?
-        pass
+        user=Database.query_user({"username":user_name})
+        if user is None:
+            raise NotFound
+        return user
 
     def to_url(self, user): # type: ignore
-        pass
+        return Database.User.serialize(user)["username"]
 
 app.url_map.converters["job"] = JobConverter
 app.url_map.converters["user"] = UserConverter
