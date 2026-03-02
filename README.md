@@ -33,3 +33,12 @@ MYSQL_DB = ""               //- your desired name for the database as in line 4 
 SECRET_KEY = ""             //- irrelevant in this
 
 
+///TEE dedis 3:een
+A README.md file containing:
+
+    Dependencies (external libraries)
+    How to setup the framework.
+    How to populate and setup the database.
+    How to setup (e.g. modifying any configuration files) and run your RESTful API.
+    The URL to access your API (usually nameofapplication/api/version/)=> the path to your application. We mean the entry point, the main endpoint of your API.
+

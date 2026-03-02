@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from flask import Flask, Response, request
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
@@ -154,6 +155,37 @@ class JobItem(Resource):
             return Response(status=204)
         return Response(status=400)
 
+class TimeTableItem(Resource):
+    
+    def get(self, timetable):
+        return Database.Timetable.serialize(timetable)
+
+    def put(self, timetable):
+        pass
+
+    def post(self, timetable):
+        if not request.json:
+            raise UnsupportedMediaType
+        try:
+            validate(request.json, Database.Timetable.json_schema())
+        except ValidationError as e:
+            raise BadRequest(description=str(e))
+        
+        try:
+            Database.insertJob(timetable)
+        except IntegrityError:
+            raise Conflict(
+                description="something shitty happened in timetable post"
+            )
+        return Response(status=204)
+
+    def delete(self, timetable):
+        if Database.Timetable(timetable):
+            return Response(status=204)
+        return Response(status=400)
+
+
+
 ##Converters
 class JobConverter(BaseConverter):
 
@@ -178,11 +210,22 @@ class UserConverter(BaseConverter):
     def to_url(self, user): # type: ignore
         return Database.User.serialize(user)["username"]
 
+##implement this
+class TimeTableConverter(BaseConverter):
+    def to_python(self, value: str) -> Any:
+        return super().to_python(value)
+    def to_url(self, value: Any) -> str:
+        return super().to_url(value)
+    
+
 app.url_map.converters["job"] = JobConverter
 app.url_map.converters["user"] = UserConverter
+app.url_map.converters["timetable"] = TimeTableConverter
 #tänne seuraavat
 api.add_resource(JobCollection, "api/jobs")
 api.add_resource(JobItem, "api/jobs/<JobItem>")
 api.add_resource(UserCollection, "api/users")
 api.add_resource(UserItem, "api/users/<UserItem>")
+
+api.add_resource(TimeTableItem, "api/jobs/<JobItem>/<TimeTableItem>")
 

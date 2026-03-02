@@ -83,14 +83,13 @@ class Job(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     userID = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
     job_name = db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
-    jobDescription = db.Column(db.String(255), nullable=False)
-    timetable = db.Column(db.String(63), nullable=True)
+    jobDescription = db.Column(db.String(255), nullable=False) 
     location = db.Column(db.String(63),nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
     user = db.relationship("User",  back_populates = "jobs")###relation
-
+    timetable = db.relationship("Timetable", back_populates= "timetable", nullable=True)
     
     def serialize(self):
         job = {"id":self.id}
@@ -149,6 +148,63 @@ class Job(db.Model):
             "type": "object"
         }
         return schema
+    
+
+
+    
+class Timetable(db.Model):
+    __tablename__ = 'timetable'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title= db.Column(db.String(63), nullable=False)####lisätty kenttä resursseja varten
+    start_time = db.Column(db.DateTime, nullable=True)##unix tms
+    end_time = db.Column(db.DateTime, nullable=True)##unix tms
+    is_booked = db.Column(db.Boolean,nullable=False)
+    created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
+    job = db.relationship("Job",  back_populates = "jobs")###relation
+
+    
+    def serialize(self):
+        timetable = {"id":self.id}
+        timetable["title"]=self.title
+        timetable["start_time"]=self.start_time
+        timetable["end_time"]=self.end_time
+        timetable["is_booked"]=self.is_booked
+        timetable["created"]=self.created
+        return timetable
+    
+    def deserialize(self, timetable):
+        self.title  = timetable["title"]
+        self.start_time = timetable["start_time"]
+        self.end_time = timetable["end_time"]
+        self.is_booked = timetable["is_booked"]
+        self.created = timetable["created"]
+
+    @staticmethod
+    def json_schema():
+        schema = {
+            "type": "object",
+            "required": ["title", "start_time","end_time","is_booked"]
+        }
+        props = schema["properties"] = {}
+        props["title"] = {
+            "description": "tt entry title",
+            "type": "string"
+        }
+        props["start_time"] = {
+            "description": "start time",
+            "type": "ISO_datetime"
+        }
+        props["end_time"] = {
+            "description": "end time ",
+            "type": "ISO_datetime"
+        }
+        props["is_booked"] = {
+            "description": "resrevation status",
+            "type": "boolean"
+        }
+        return schema
+
 
 def init():
     createDatabase()
