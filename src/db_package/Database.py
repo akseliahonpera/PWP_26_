@@ -4,13 +4,12 @@ from flask_sqlalchemy import SQLAlchemy
 import config
 from sqlalchemy_utils import database_exists
 import random 
-
 from app import app
 
+#These are instantiated when database.py is imported by api.
 app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
 db = SQLAlchemy(app)
-
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -26,14 +25,6 @@ class User(db.Model):
 
 class Job(db.Model):
     __tablename__ = 'jobs'
-    id: int
-    userID: int
-    jobDescription:str
-    timetable:str
-    location:str
-    created:str
-    opening_hours:str
-    category:str
 
     id = db.Column(db.Integer, primary_key=True)
     userID = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
@@ -339,3 +330,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+else:
+    init()

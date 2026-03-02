@@ -1,6 +1,6 @@
 
 import pytest
-from src.db_package import database_ORM
+from db_package import database
 
 ###chatGTP
 user_packet = {
@@ -17,7 +17,7 @@ user_packet = {
 def test_user():
     """Test creating a new user"""
     print("running_test user")
-    user = database_ORM.User(
+    user = database.User(
                 username= user_packet["username"],  # type: ignore
                 password= user_packet["password"], # type: ignore
                 email= user_packet["email"], # type: ignore
