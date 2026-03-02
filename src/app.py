@@ -24,8 +24,9 @@ def testfunction():
     print("test query all ")
     jobs = Database.query_job_all()
 
-    for job in jobs: # type: ignore
-        print(job)
+    # for job in jobs: # type: ignore
+        # Clogs the cmd, uncomment if want to test
+        #print(job)
     
     print("test query by generic ")
     jobs = Database.query_job(job_test_packet2)

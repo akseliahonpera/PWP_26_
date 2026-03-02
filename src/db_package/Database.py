@@ -24,7 +24,7 @@ class User(db.Model):
     jobs = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
     def serialize(self, include_jobs=False):
-        user = {"username":self.username}
+        user = {"id": self.id, "username": self.username}
         user["email"]=self.email
         user["address"]=self.address
         user["phone_number"]=self.phone_number
@@ -82,14 +82,14 @@ class Job(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     userID = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
-    job_name = db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
+    job_name = db.Column(db.String(63), nullable=False)####lisätty kenttä resursseja varten
     jobDescription = db.Column(db.String(255), nullable=False) 
     location = db.Column(db.String(63),nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
     user = db.relationship("User",  back_populates = "jobs")###relation
-    timetable = db.relationship("Timetable", back_populates= "timetable", nullable=True)
+    timetable = db.relationship("Timetable", back_populates= "job", cascade="all, delete-orphan")
     
     def serialize(self):
         job = {"id":self.id}
@@ -110,7 +110,7 @@ class Job(db.Model):
         self.location=job["location"]
         self.opening_hours=job["opening_hours"]
         self.category=job["category"]
-        self.user=job["user"]
+        #self.user=job["user"]
 
     @staticmethod
     def json_schema():
@@ -161,7 +161,8 @@ class Timetable(db.Model):
     end_time = db.Column(db.DateTime, nullable=True)##unix tms
     is_booked = db.Column(db.Boolean,nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
-    job = db.relationship("Job",  back_populates = "jobs")###relation
+    job_id = db.Column(db.Integer, db.ForeignKey("jobs.id"), nullable=False)
+    job = db.relationship("Job",  back_populates = "timetable")###relation
 
     
     def serialize(self):
@@ -224,7 +225,13 @@ def insertUser(user):
     """"Gets user object as parameter. Returns true or false depending on success."""
     try:
         with app.app_context():
-            db.session.add(user)
+            existing = User.query.filter_by(username=user["username"]).first()
+            if existing:
+                print(f"user {user['username']} already exists, skipping")
+                return False
+            user_obj = User()
+            user_obj.deserialize(user)
+            db.session.add(user_obj)
             db.session.commit()
             return True
     except Exception as e:
@@ -236,7 +243,9 @@ def insertJob(job):
     """"Gets job dict. Returns true or false depending on success."""
     try: 
         with app.app_context():
-            db.session.add(job)
+            job_obj = Job()
+            job_obj.deserialize(job)
+            db.session.add(job_obj)
             db.session.commit()
             return True
     except Exception as e:
@@ -380,19 +389,20 @@ def delete_user_by_id(user_id):
         print("user deletion failed, try cascading delete?", e)
         return False
 
-def update_job(job):    
+def update_job(job):
     """ Kinda unsafe.
         Make sure only authorized users can access this per job!! 
         Locate job by given id and change according to the job packet
     """
     try:
         with app.app_context():
-            job = Job.deserialize(job=job) # type: ignore
-            db.session.add(job)
+            job_obj = Job()
+            job_obj.deserialize(job) # type: ignore
+            db.session.add(job_obj)
             db.session.commit()
             return True
     except Exception as e:
-        print("qieru failed ", e)
+        print("query failed ", e)
         return False
 
 def update_user(user):
@@ -402,8 +412,9 @@ def update_user(user):
     """
     try:
         with app.app_context():
-            user = User.deserialize(user) # type: ignore
-            db.session.add(user)
+            user_obj = User()
+            user_obj.deserialize(user)
+            db.session.add(user_obj)
             db.session.commit()
             return True
     except Exception as e:
@@ -419,14 +430,20 @@ user_test_packet = {
     "password": "securepassword123",  # hash this later if you haven't yet
     "email": "testuser@example.com",
     "address": "123 Main Street, Springfield",
-    "phoneNumber": "555-123-4567",
+    "phone_number": "555-123-4567",
     "description": "Test user account for database insertion"
 }
 
 job_test_packet = {
     "userID": 1,  # make sure this user ID exists in your User table
     "jobDescription": "Looking for a part-time barista for weekend shifts",
-    "timetable": "Weekends 8am–2pm",
+    "job_name": "Barista at coffee shop",
+    "timetable": {
+        "title": "Weekend Morning Shift",
+        "start_time": "2026-02-14T08:00:00",
+        "end_time": "2026-02-14T14:00:00",
+        "is_booked": False
+    },
     "location": "Downtown Cafe, Springfield",
     "created": "2026-02-09",  # or datetime.utcnow() if your model expects a datetime
     "opening_hours": "08:00-14:00",
@@ -446,10 +463,20 @@ def populate_database():
         insertUser(userdata)
 
     for i in range(samplesize-25):
-        randomUser= random.randrange(1,samplesize-25)
-        print(randomUser)
-        jobdata["userID"]= randomUser
-        insertJob(jobdata)
+        #randomUser= random.randrange(1,samplesize-25)
+        #print(randomUser)
+        #jobdata["userID"]= randomUser
+        #insertJob(jobdata)
+        users = query_user_all()
+        #print("all users: ", users)
+        if users == -1:
+            print("No users available, aborting job creation")
+        else:
+            random_int = random.randrange(len(users))
+            #print("random index:", random_int)
+            #print("Selected user dict:", users[random_int])
+            jobdata["UserID"] = users[random_int]["id"]
+            insertJob(jobdata)
 
 def main():
     """test for populating the database by running this module dircetly. """

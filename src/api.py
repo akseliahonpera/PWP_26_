@@ -3,7 +3,7 @@ from typing import Any
 from flask import Flask, Response, request
 from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
-from jsonschema import validate, ValidationError, draft7_format_checker
+from jsonschema import validate, ValidationError, FormatChecker
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -224,10 +224,10 @@ app.url_map.converters["job"] = JobConverter
 app.url_map.converters["user"] = UserConverter
 app.url_map.converters["timetable"] = TimeTableConverter
 #tänne seuraavat
-api.add_resource(JobCollection, "api/jobs")
-api.add_resource(JobItem, "api/jobs/<JobItem>")
-api.add_resource(UserCollection, "api/users")
-api.add_resource(UserItem, "api/users/<UserItem>")
+api.add_resource(JobCollection, "/api/jobs")
+api.add_resource(JobItem, "/api/jobs/<JobItem>")
+api.add_resource(UserCollection, "/api/users")
+api.add_resource(UserItem, "/api/users/<UserItem>")
 
 api.add_resource(TimeTableItem, "api/jobs/<JobItem>/<TimeTableItem>")
 
