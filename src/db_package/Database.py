@@ -221,11 +221,9 @@ def createDatabase(): #tables actually,
     
 
 def insertUser(user):
-    """"Gets user dict as parameter. Returns true or false depending on success."""
+    """"Gets user object as parameter. Returns true or false depending on success."""
     try:
         with app.app_context():
-            
-            user = User.deserialize(user=user) # type: ignore
             db.session.add(user)
             db.session.commit()
             return True
@@ -238,8 +236,7 @@ def insertJob(job):
     """"Gets job dict. Returns true or false depending on success."""
     try: 
         with app.app_context():
-            job_record =Job.deserialize(job=job) # type: ignore
-            db.session.add(job_record)
+            db.session.add(job)
             db.session.commit()
             return True
     except Exception as e:

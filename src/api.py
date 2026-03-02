@@ -53,6 +53,8 @@ class UserItem(Resource):
         except ValidationError as e:
             raise BadRequest(description=str(e))
         try:
+            tempuser = Database.User()
+            user= tempuser.deserialize(request.json)
             Database.insertUser(user)
         except IntegrityError:
             raise Conflict(
