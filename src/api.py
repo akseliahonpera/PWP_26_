@@ -27,16 +27,44 @@ def set_mysql_pragma(dbapi_connection, connection_record):
 class UserItem(Resource):
     
     def get(self, user):
-        pass
+        return Database.User.serialize(user)
 
     def put(self, user):
-        pass
+        if not request.json:
+            raise UnsupportedMediaType
+        try: 
+            validate(request.json, Database.User.json_schema())
+        except ValidationError as e:
+            raise BadRequest(description=str(e))
+        try:
+            Database.update_user(user)
+        except IntegrityError:
+            raise Conflict(
+                description="Something shitty happened"
+            )
+        return Response(status=204)
 
     def post(self, user):
-        pass
+        if not request.json:
+            raise UnsupportedMediaType
+        try: 
+            validate(request.json, Database.User.json_schema())
+        except ValidationError as e:
+            raise BadRequest(description=str(e))
+        try:
+            Database.insertUser(user)
+        except IntegrityError:
+            raise Conflict(
+                description="User with name '{username}' already in service".format(
+                    **request.json
+                )
+            )
+        return Response(status=204)
 
     def delete(self, user):
-        pass
+        if Database.delete_user(user):
+            return Response(status=204)
+        return Response(status=400)
 
 class UserCollection(Resource):
     def get(self, user):

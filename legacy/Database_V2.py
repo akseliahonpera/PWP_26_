@@ -15,11 +15,11 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique= True, nullable=False) ##set unique to false to test
-    password= db.Column(db.String(255), nullable=False)
+    password= db.Column(db.String(32), nullable=False)
     email = db.Column(db.String(63), unique= False, nullable=False) ##set unique to false to test
     address = db.Column(db.String(63), nullable=False)
-    phone_number = db.Column(db.String(31), nullable=False)
-    description = db.Column(db.Text(255), nullable=False)
+    phoneNumber = db.Column(db.String(31), nullable=False)
+    description = db.Column(db.String(255), nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     jobs = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
@@ -27,22 +27,22 @@ class User(db.Model):
         user = {"username":self.username}
         user["email"]=self.email
         user["address"]=self.address
-        user["phone_number"]=self.phone_number
+        user["phoneNumber"]=self.phoneNumber
         user["description"]= self.description
-        user["created"] = self.created.isoformat()
+        user["created"] = self.created
         if include_jobs:
             user["jobs"] = []
             for job in self.jobs: # type: ignore
-                user["jobs"].append(job.serialize())
+                user["jobs"].append(job)
         return user
     
     def deserialize(self, user):
         self.username = user["username"]
-        self.password = user["password"]
         self.email = user["email"]
         self.address = user["address"]
-        self.phone_number = user["phone_number"]
+        self.phoneNumber = user["phoneNumber"]
         self.description = user["description"]
+        self.created = user["created"]
 
     @staticmethod
     def json_schema():
@@ -67,13 +67,13 @@ class User(db.Model):
             "description": "users address",
             "type": "string"
         }
-        props["phone_number"] = {
+        props["phoneNumber"] = {
             "description": "users phonenumber",
             "type": "string"
         }
-        props["description"] = {
+        props["password"] = {
             "description": "users description, bio",
-            "type": "String"
+            "type": "string"
         }
         return schema
 
@@ -82,7 +82,6 @@ class Job(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     userID = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
-    job_name = db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
     jobDescription = db.Column(db.String(255), nullable=False)
     timetable = db.Column(db.String(63), nullable=True)
     location = db.Column(db.String(63),nullable=False)
@@ -95,7 +94,6 @@ class Job(db.Model):
     def serialize(self):
         job = {"id":self.id}
         job["UserID"]=self.userID
-        job["job_name"]=self.job_name
         job["jobDescription"]=self.jobDescription
         job["location"]=self.location
         job["created"]=self.created
@@ -106,9 +104,9 @@ class Job(db.Model):
     
     def deserialize(self, job):
         self.userID=job["UserID"]
-        self.job_name=job["job_name"]
         self.jobDescription=job["jobDescription"]
         self.location=job["location"]
+        self.created=job["created"]##????
         self.opening_hours=job["opening_hours"]
         self.category=job["category"]
         self.user=job["user"]
@@ -122,10 +120,6 @@ class Job(db.Model):
         props = schema["properties"] = {}
         props["userID"] = {
             "description": "Jobs unique uuserID",
-            "type": "string"
-        }
-        props["job_name"] = {
-            "description": "Jobs unique name",
             "type": "string"
         }
         props["jobDescription"] = {
@@ -145,8 +139,8 @@ class Job(db.Model):
             "type": "string"
         }
         props["user"] = {
-            "description": "user reference object",
-            "type": "object"
+            "description": "user reference",
+            "type": "string"
         }
         return schema
 
@@ -158,19 +152,24 @@ def createDatabase(): #tables actually,
     """Creates all tables(defined models related to db) to the database, if this fails create the database itself first."""
     with app.app_context():
         if database_exists(f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'):
-            ##This creates tables if they are not existing already. Works only if db already exists.
             db.create_all()
         else:
             print("database does not exist")
     
 
-def insertUser(user):
-    """"Gets user dict as parameter. Returns true or false depending on success."""
+def insertUser(user_packet):
+    """"Gets dictionary of uservalues as parameter. Returns true or false depending on success."""
     try:
         with app.app_context():
-            
-            user = User.deserialize(user=user) # type: ignore
-            db.session.add(user)
+            user_record = User(
+                username= user_packet["username"],  # type: ignore
+                password= user_packet["password"], # type: ignore
+                email= user_packet["email"], # type: ignore
+                address= user_packet["address"], # type: ignore
+                phoneNumber= user_packet["phoneNumber"], # type: ignore
+                description= user_packet["description"] # type: ignore
+                )
+            db.session.add(user_record)
             db.session.commit()
             return True
     except Exception as e:
@@ -178,11 +177,19 @@ def insertUser(user):
         return False
 
 
-def insertJob(job):
-    """"Gets job dict. Returns true or false depending on success."""
+def insertJob(job_packet):
+    """"Gets dictionary of job values as parameter. Returns true or false depending on success."""
     try: 
         with app.app_context():
-            job_record =Job.deserialize(job=job) # type: ignore
+            job_record = Job(
+            userID = job_packet["userID"], # type: ignore
+            jobDescription = job_packet["jobDescription"], # type: ignore
+            timetable = job_packet["timetable"], # type: ignore
+            location = job_packet["location"], # type: ignore
+            created = job_packet["created"], # type: ignore
+            opening_hours = job_packet["opening_hours"], # type: ignore
+            category = job_packet["category"] # type: ignore
+            ) 
             db.session.add(job_record)
             db.session.commit()
             return True
@@ -200,12 +207,23 @@ def query_user_all():
             result_dict_list = []
              ##serialize to json list (dict)
             for i in user_rs:
-                result_dict_list.append(User.serialize(i))
+                user_dict= {}
+                user_dict["id"] = i.id
+                user_dict["username"] = i.username
+                user_dict["password"] = i.password
+                user_dict["email"] = i.email
+                user_dict["address"] = i.address
+                user_dict["phoneNumber"] = i.phoneNumber
+                user_dict["description"] = i.description
+                user_dict["created"] = str(i.category)
+                result_dict_list.append(user_dict)
             #print(querything)
             return result_dict_list
 
+
+
     except Exception as e:
-        print("query failed ", e)
+        print("qieru failed ", e)
         return -1
     return -1
     
@@ -222,7 +240,16 @@ def query_user(http_query_params):
             result_dict_list = []
              ##serialize to json list (dict)
             for i in user_rs:
-                result_dict_list.append(User.serialize(i))
+                user_dict= {}
+                user_dict["id"] = i.id
+                user_dict["username"] = i.username
+                user_dict["password"] = i.password
+                user_dict["email"] = i.email
+                user_dict["address"] = i.address
+                user_dict["phoneNumber"] = i.phoneNumber
+                user_dict["description"] = i.description
+                user_dict["created"] = str(i.created)
+                result_dict_list.append(user_dict)
             #print(querything)
             return result_dict_list
 
@@ -237,11 +264,21 @@ def query_job_all():
     """Query all jobs currently, Returns list[dict] of jobs"""
     try:
         with app.app_context():
+
             job_rs= Job.query.all()
             result_dict_list = []
              ##serialize to json list
-            for i in job_rs:       
-                result_dict_list.append(Job.serialize(i))
+            for i in job_rs:
+                job_dict= {}
+                job_dict["id"] = i.id
+                job_dict["userID"] = i.userID
+                job_dict["jobDescription"] = i.jobDescription
+                job_dict["timetable"] = i.timetable
+                job_dict["ocation"] = i.location
+                job_dict[""] = str(i.created)
+                job_dict["pening_hours"] = i.opening_hours
+                job_dict["category"] = i.category
+                result_dict_list.append(job_dict)
             #print(querything)
             return result_dict_list
         
@@ -256,13 +293,22 @@ def query_job(http_query_params):
     try:
         with app.app_context():
             
-            job_rs = db.session.query(Job).filter_by(**http_query_params).all()
-            result_dict_list = []
-             ##serialize to json list
-            for i in job_rs:       
-                result_dict_list.append(Job.serialize(i))
+            querything = db.session.query(Job).filter_by(**http_query_params).all()
+            result_json_list = []
+            ##serialize to json list
+            for i in querything:
+                job_dict= {}
+                job_dict["id"] = i.id
+                job_dict["userID"] = i.userID
+                job_dict["jobDescription"] = i.jobDescription
+                job_dict["timetable"] = i.timetable
+                job_dict["ocation"] = i.location
+                job_dict[""] = str(i.created)
+                job_dict["pening_hours"] = i.opening_hours
+                job_dict["category"] = i.category
+                result_json_list.append(job_dict)
             #print(querything)
-            return result_dict_list
+            return result_json_list
 
     except Exception as e:
         print("query failed ", e)
@@ -270,20 +316,7 @@ def query_job(http_query_params):
 
 
 
-def delete_job(job):
-    """Delete by job object"""
-    try:
-        with app.app_context():
-            db.session.delete(job)
-            db.session.commit()
-            print("Job deletion succesfull")
-            return True
-    except Exception as e:
-        print("job deletion failed ", e)
-        return False
-
-
-def delete_job_by_id(job_id):
+def delete_job(job_id):
     """Delete by id"""
     try:
         with app.app_context():
@@ -296,22 +329,7 @@ def delete_job_by_id(job_id):
         print("job deletion failed ", e)
         return False
 
-
-def delete_user(user):
-    """Delete user by id"""
-    try:
-        with app.app_context():
-
-            db.session.delete(user)
-            db.session.commit()
-            print("user deletion succesfull")
-            return True
-    except Exception as e:
-        print("user deletion failed, try cascading delete?", e)
-        return False
-
-
-def delete_user_by_id(user_id):
+def delete_user(user_id):
     """Delete user by id"""
     try:
         with app.app_context():
@@ -327,30 +345,44 @@ def delete_user_by_id(user_id):
         print("user deletion failed, try cascading delete?", e)
         return False
 
-def update_job(job):    
+def update_job(job_id, job_packet):    
     """ Kinda unsafe.
         Make sure only authorized users can access this per job!! 
         Locate job by given id and change according to the job packet
     """
     try:
         with app.app_context():
-            job = Job.deserialize(job=job) # type: ignore
-            db.session.add(job)
+            temp_job = Job.query.filter_by(id=job_id).first()
+            temp_job.userID = job_packet["userID"], # type: ignore
+            temp_job.jobDescription = job_packet["jobDescription"], # type: ignore
+            temp_job.timetable = job_packet["timetable"], # type: ignore
+            temp_job.location = job_packet["location"], # type: ignore
+            temp_job.opening_hours = job_packet["opening_hours"], # type: ignore
+            temp_job.category = job_packet["category"] # type: ignore
+            
+            db.session.add(temp_job)
             db.session.commit()
             return True
     except Exception as e:
         print("qieru failed ", e)
         return False
 
-def update_user(user):
+def update_user(user_id,user_packet):
     """ Kinda unsafe.
         Make sure only authorized users can access this per user!! 
         Gets user data as json dict, locates user and makes changes according to the new packet,shitty
     """
     try:
         with app.app_context():
-            user = User.deserialize(user) # type: ignore
-            db.session.add(user)
+
+
+            temp_user = User.query.filter_by(username=user_packet["username"], password=user_packet["password"])
+            temp_user.username= user_packet["username"],  # type: ignore
+            temp_user.password= user_packet["password"], # type: ignore
+            temp_user.email= user_packet["email"], # type: ignore
+            temp_user.address= user_packet["address"], # type: ignore
+            temp_user.phoneNumber= user_packet["phoneNumber"], # type: ignore
+            temp_user.description= user_packet["description"] # type: ignore
             db.session.commit()
             return True
     except Exception as e:
