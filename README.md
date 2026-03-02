@@ -21,6 +21,7 @@ datetime
 flask
 flask_sqlalchemy
 sqlalchemy_utils
+pymysql
 
 
 Make yourself a config.py file to the src folder.
