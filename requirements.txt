@@ -2,3 +2,4 @@ datetime
 flask
 flask_sqlalchemy
 sqlalchemy_utils
+pymysql
