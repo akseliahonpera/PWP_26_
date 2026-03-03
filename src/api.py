@@ -178,9 +178,7 @@ class TimeTableItem(Resource):
         return Response(status=204)
 
     def delete(self, timetable):
-        if Database.Timetable(timetable):
-            return Response(status=204)
-        return Response(status=400)
+        pass
 
 
 
@@ -218,7 +216,7 @@ class TimeTableConverter(BaseConverter):
 
 app.url_map.converters["job"] = JobConverter
 app.url_map.converters["user"] = UserConverter
-app.url_map.converters["timetable"] = TimeTableConverter
+#app.url_map.converters["timetable"] = TimeTableConverter
 #tänne seuraavat
 api.add_resource(JobCollection, "api/jobs")
 api.add_resource(JobItem, "api/jobs/<JobItem>")

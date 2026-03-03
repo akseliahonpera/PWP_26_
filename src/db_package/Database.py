@@ -21,7 +21,7 @@ db = SQLAlchemy(app)
 
 
 class User(db.Model):
-    __tablename__ = 'users'
+
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique= True, nullable=False) ##set unique to false to test
     password= db.Column(db.String(255), nullable=False)
@@ -30,7 +30,7 @@ class User(db.Model):
     phone_number = db.Column(db.String(31), nullable=False)
     description = db.Column(db.Text(255), nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
-    jobs = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
+    jobs = db.relationship("Job",cascade="all,delete-orphan", back_populates = "users")###relation
 
     def serialize(self, include_jobs=False):
         user = {"username":self.username}
@@ -57,7 +57,7 @@ class User(db.Model):
     def json_schema():
         schema = {
             "type": "object",
-            "required": ["username", "password","email","address","phoneNumber","description"]
+            "required": ["username", "password","email","address","phone_number","description"]
         }
         props = schema["properties"] = {}
         props["username"] = {
@@ -87,35 +87,34 @@ class User(db.Model):
         return schema
 
 class Job(db.Model):
-    __tablename__ = 'jobs'
-
+  
     id = db.Column(db.Integer, primary_key=True)
-    userID = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
     job_name = db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
-    jobDescription = db.Column(db.String(255), nullable=False) 
+    job_description = db.Column(db.String(255), nullable=False) 
     location = db.Column(db.String(63),nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
-    user = db.relationship("User",  back_populates = "jobs")###relation
-    timetable = db.relationship("Timetable", back_populates= "timetable")
+    users = db.relationship("User",  back_populates = "jobs")###relation
+    timetables = db.relationship("Timetable",cascade="all,delete-orphan", back_populates= "jobs")
     
     def serialize(self):
         job = {"id":self.id}
-        job["UserID"]=self.userID
+        job["user_id"]=self.user_id
         job["job_name"]=self.job_name
-        job["jobDescription"]=self.jobDescription
+        job["job_description"]=self.job_description
         job["location"]=self.location
         job["created"]=self.created.isoformat()
         job["opening_hours"]= self.opening_hours
         job["category"] = self.category
-        job["user"] = self.user
+        job["user"] = self.user.serialize()
         return job
     
     def deserialize(self, job):
-        self.userID=job["UserID"]
+        self.user_id=job["user_id"]
         self.job_name=job["job_name"]
-        self.jobDescription=job["jobDescription"]
+        self.job_description=job["job_description"]
         self.location=job["location"]
         self.opening_hours=job["opening_hours"]
         self.category=job["category"]
@@ -125,10 +124,10 @@ class Job(db.Model):
     def json_schema():
         schema = {
             "type": "object",
-            "required": ["userID", "jobDescription","location","opening_hours","category","user"]
+            "required": ["user_id", "job_description","location","opening_hours","category","user"]
         }
         props = schema["properties"] = {}
-        props["userID"] = {
+        props["user_id"] = {
             "description": "Jobs unique uuserID",
             "type": "string"
         }
@@ -136,8 +135,8 @@ class Job(db.Model):
             "description": "Jobs unique name",
             "type": "string"
         }
-        props["jobDescription"] = {
-            "description": "jobs jobDescription, to be hashed by hashing and salting algo",
+        props["job_description"] = {
+            "description": "jobs description",
             "type": "string"
         }
         props["location"] = {
@@ -162,15 +161,15 @@ class Job(db.Model):
 
     
 class Timetable(db.Model):
-    __tablename__ = 'timetable'
 
     id = db.Column(db.Integer, primary_key=True)
+    job_id = db.Column(db.Integer, db.ForeignKey(Job.id, ondelete="CASCADE"),  nullable=False) # type: ignore
     title= db.Column(db.String(63), nullable=False)####lisätty kenttä resursseja varten
     start_time = db.Column(db.DateTime, nullable=True)##unix tms
     end_time = db.Column(db.DateTime, nullable=True)##unix tms
     is_booked = db.Column(db.Boolean,nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
-    job = db.relationship("Job",  back_populates = "jobs")###relation
+    jobs = db.relationship("Job",  back_populates = "timetables")###relation
 
     
     def serialize(self):
@@ -468,13 +467,14 @@ user_test_packet = {
     "password": "securepassword123",  # hash this later if you haven't yet
     "email": "testuser@example.com",
     "address": "123 Main Street, Springfield",
-    "phoneNumber": "555-123-4567",
+    "phone_number": "555-123-4567",
     "description": "Test user account for database insertion"
 }
 
 job_test_packet = {
-    "userID": 1,  # make sure this user ID exists in your User table
-    "jobDescription": "Looking for a part-time barista for weekend shifts",
+    "user_id": 1,  # make sure this user ID exists in your User table
+    "job_name": "unique job name",
+    "job_description": "Looking for a part-time barista for weekend shifts",
     "timetable": "Weekends 8am–2pm",
     "location": "Downtown Cafe, Springfield",
     "created": "2026-02-09",  # or datetime.utcnow() if your model expects a datetime
@@ -491,15 +491,16 @@ def populate_database():
     jobdata= job_test_packet
     for i in range(samplesize):
         userdata["username"] = runningNumber_user+f'": "+{i}'
-        print(" UUUUSERNAMEEEESSS::        "+userdata["username"])
+        print(" USERNAMES::"+userdata["username"])
         insertUser(userdata)
 
     for i in range(samplesize-25):
         randomUser= random.randrange(1,samplesize-25)
         print(randomUser)
-        jobdata["userID"]= randomUser
+        jobdata["user_id"]= randomUser
+        jobdata["job_name"] = jobdata["job_name"]+f'{i}'
         insertJob(jobdata)
-
+""""""
 def main():
     """test for populating the database by running this module dircetly. """
     init()

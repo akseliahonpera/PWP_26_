@@ -19,26 +19,27 @@ def testfunction():
     print("attempt deletion of job")
     Database.delete_job(3)
     print("attempt deletion of user")
-    Database.delete_user(2)
-    
+    Database.delete_user_by_id(2)
+    """
     print("test query all ")
     jobs = Database.query_job_all()
-
-    for job in jobs: # type: ignore
-        print(job)
+    if jobs:
+        for job in jobs: # type: ignore
+            print(job)
     
     print("test query by generic ")
     jobs = Database.query_job(job_test_packet2)
-
-    for job in jobs: # type: ignore
-        print(job)
+    if jobs:
+        for job in jobs: # type: ignore
+            print(job)
     print("test query users by generic dict")
     users = Database.query_user(user_test_packet2)
     print("Print queryresults")
-    for user in users: # type: ignore
-        print(user)
+    if users:
+        for user in users: # type: ignore
+            print(user)
 
-
+    """
 if __name__ == "__main__":
     main()
 
