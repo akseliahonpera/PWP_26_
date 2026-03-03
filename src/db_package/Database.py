@@ -30,10 +30,10 @@ class User(db.Model):
     phone_number = db.Column(db.String(31), nullable=False)
     description = db.Column(db.Text(255), nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
-    jobs = db.relationship("Job",cascade="all,delete-orphan", back_populates = "users")###relation
+    job = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
     def serialize(self, include_jobs=False):
-        user = {"username":self.username}
+        user = {"id": self.id, "username": self.username}
         user["email"]=self.email
         user["address"]=self.address
         user["phone_number"]=self.phone_number
@@ -41,8 +41,8 @@ class User(db.Model):
         user["created"] = self.created.isoformat()
         if include_jobs:
             user["jobs"] = []
-            for job in self.jobs: # type: ignore
-                user["jobs"].append(job.serialize())
+            for single_job in self.job: # type: ignore
+                user["jobs"].append(single_job.serialize())
         return user
     
     def deserialize(self, user):
@@ -96,8 +96,8 @@ class Job(db.Model):
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
-    users = db.relationship("User",  back_populates = "jobs")###relation
-    timetables = db.relationship("Timetable",cascade="all,delete-orphan", back_populates= "jobs")
+    user = db.relationship("User",  back_populates = "job")###relation
+    timetable = db.relationship("Timetable",cascade="all,delete-orphan", back_populates= "job")
     
     def serialize(self):
         job = {"id":self.id}
@@ -118,7 +118,7 @@ class Job(db.Model):
         self.location=job["location"]
         self.opening_hours=job["opening_hours"]
         self.category=job["category"]
-        self.user=job["user"]
+        #self.user=job["user"]
 
     @staticmethod
     def json_schema():
@@ -241,7 +241,7 @@ def createDataBase():
 ###############################################################
 
 ##USER RELATED
-def insertUser(request_json):
+def insertUser(request_json):##MAybe implements checking if resource exists already??
     """"Gets user dict as parameter. Returns true or false depending on success."""
     try:
         with app.app_context():
@@ -472,10 +472,15 @@ user_test_packet = {
 }
 
 job_test_packet = {
-    "user_id": 1,  # make sure this user ID exists in your User table
-    "job_name": "unique job name",
-    "job_description": "Looking for a part-time barista for weekend shifts",
-    "timetable": "Weekends 8am–2pm",
+    "userID": 1,  # make sure this user ID exists in your User table
+    "jobDescription": "Looking for a part-time barista for weekend shifts",
+    "job_name": "Barista at coffee shop",
+    "timetable": {
+        "title": "Weekend Morning Shift",
+        "start_time": "2026-02-14T08:00:00",
+        "end_time": "2026-02-14T14:00:00",
+        "is_booked": False
+    },
     "location": "Downtown Cafe, Springfield",
     "created": "2026-02-09",  # or datetime.utcnow() if your model expects a datetime
     "opening_hours": "08:00-14:00",
@@ -495,12 +500,21 @@ def populate_database():
         insertUser(userdata)
 
     for i in range(samplesize-25):
-        randomUser= random.randrange(1,samplesize-25)
-        print(randomUser)
-        jobdata["user_id"]= randomUser
-        jobdata["job_name"] = jobdata["job_name"]+f'{i}'
-        insertJob(jobdata)
-""""""
+        #randomUser= random.randrange(1,samplesize-25)
+        #print(randomUser)
+        #jobdata["userID"]= randomUser
+        #insertJob(jobdata)
+        users = query_user_all()
+        #print("all users: ", users)
+        if users == -1:
+            print("No users available, aborting job creation")
+        else:
+            random_int = random.randrange(len(users)) # type: ignore
+            #print("random index:", random_int)
+            #print("Selected user dict:", users[random_int])
+            jobdata["UserID"] = users[random_int]["id"] # type: ignore
+            insertJob(jobdata)
+
 def main():
     """test for populating the database by running this module dircetly. """
     init()
