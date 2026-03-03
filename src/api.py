@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Any
 from flask import Flask, Response, request
-from flask_restful import Api, Resource
+from flask_restful import Resource
 from flask_sqlalchemy import SQLAlchemy
 from jsonschema import validate, ValidationError, FormatChecker
 from sqlalchemy.exc import IntegrityError
@@ -12,9 +12,9 @@ from werkzeug.routing import BaseConverter
 from db_package import Database
 
 from app import app
-
+from app import api
 ##?? maybe execudet after database initiation??
-api = Api(app)
+
 
 @event.listens_for(Engine, "connect")
 def set_mysql_pragma(dbapi_connection, connection_record):
@@ -208,10 +208,11 @@ class UserConverter(BaseConverter):
 
 ##implement this
 class TimeTableConverter(BaseConverter):
-    def to_python(self, value: str) -> Any:
-        return super().to_python(value)
-    def to_url(self, value: Any) -> str:
-        return super().to_url(value)
+    def to_python(self, timetable_name): # type: ignore
+        pass
+    
+    def to_url(self, timetable): # type: ignore
+        return Database.Timetable.serialize(timetable)["title"]
     
 
 app.url_map.converters["job"] = JobConverter

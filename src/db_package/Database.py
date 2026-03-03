@@ -9,8 +9,7 @@ from app import app
 ###############################################################
 ######### Database global for module use ######################
 ###############################################################
-app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
+
 db = SQLAlchemy(app)
 
 
@@ -434,12 +433,19 @@ def update_user(user, request_json):
     """
     try:
         with app.app_context():
+            """If user is none then create new. Otherwise update."""
+            if user is None:
+                user = User()
+                user = user.deserialize(request_json) 
+                db.session.add(user)
+                db.session.commit()
+                return user
             user = user.deserialize(request_json) 
             db.session.commit()
-            return True
+            return user
     except Exception as e:
-        print("query failed ", e)
-        return False
+        print("Put failed. Username already in use perhaps?", e)
+        return None
 
 ##JOB RELATED
 def update_job(job, request_json):    
@@ -449,12 +455,18 @@ def update_job(job, request_json):
     """
     try:
         with app.app_context():
+            if job is None:
+                job = Job()
+                job = job.deserialize(request_json)
+                db.session.add(job)
+                db.session.commit()
+                return job
             job = job.deserialize(request_json)
             db.session.commit()
-            return True
+            return job
     except Exception as e:
         print("qieru failed ", e)
-        return False
+        return None
    
 
 ###############################################################

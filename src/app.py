@@ -1,14 +1,33 @@
 import datetime
+import os
+
+from flask_caching import Cache
+from flask_restful import Api
 from db_package import Database
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import config
 
 app = Flask(__name__)
+app.config["CACHE_TYPE"] = "FileSystemCache"
+app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
+
+app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
+
+
+
+api = Api(app)
+cache = Cache(app)
+
 
 
 def main():
-    testfunction()
+
+    pass
+    
+    
+    #testfunction()
  
 ##For testing the database functions
 def testfunction():
