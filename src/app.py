@@ -17,10 +17,10 @@ def testfunction():
     Database.instantiateDatabase()
     Database.populate_database()
     print("attempt deletion of job")
-    Database.delete_job(3)
+    Database.delete_job_by_id(3)
     print("attempt deletion of user")
     Database.delete_user_by_id(2)
-    """
+   
     print("test query all ")
     jobs = Database.query_job_all()
     if jobs:
@@ -39,7 +39,7 @@ def testfunction():
         for user in users: # type: ignore
             print(user)
 
-    """
+    """"""
 if __name__ == "__main__":
     main()
 
