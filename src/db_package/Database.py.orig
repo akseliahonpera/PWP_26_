@@ -169,7 +169,7 @@ class Timetable(db.Model):
     end_time = db.Column(db.DateTime, nullable=True)##unix tms
     is_booked = db.Column(db.Boolean,nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
-    job = db.relationship("Job",  back_populates = "timetable")###relation
+    jobs = db.relationship("Job",  back_populates = "timetables")###relation
 
     
     def serialize(self):
@@ -506,13 +506,13 @@ def populate_database():
         #insertJob(jobdata)
         users = query_user_all()
         #print("all users: ", users)
-        if users is None:
+        if users == -1:
             print("No users available, aborting job creation")
         else:
-            random_int = random.randrange(len(users))
+            random_int = random.randrange(len(users)) # type: ignore
             #print("random index:", random_int)
             #print("Selected user dict:", users[random_int])
-            jobdata["user_id"] = users[random_int]["id"]
+            jobdata["UserID"] = users[random_int]["id"] # type: ignore
             insertJob(jobdata)
 
 def main():
