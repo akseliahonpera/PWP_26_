@@ -1,14 +1,29 @@
 import datetime
-from db_package import Database
+import os
+
+from flask_caching import Cache
+from flask_restful import Api
+import Database
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import config
 
 app = Flask(__name__)
+app.config["CACHE_TYPE"] = "FileSystemCache"
+app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
+
+
+##instantiate Database module after app.config is ready
 
 
 def main():
-    testfunction()
+    ##Initialize database module for use. 
+
+    app.run(port=8001, debug=True)
+
+    
+    
+    #testfunction()
  
 ##For testing the database functions
 def testfunction():
@@ -17,10 +32,10 @@ def testfunction():
     Database.instantiateDatabase()
     Database.populate_database()
     print("attempt deletion of job")
-    Database.delete_job(3)
+    Database.delete_job_by_id(3)
     print("attempt deletion of user")
     Database.delete_user_by_id(2)
-    """
+   
     print("test query all ")
     jobs = Database.query_job_all()
     if jobs:
@@ -39,7 +54,7 @@ def testfunction():
         for user in users: # type: ignore
             print(user)
 
-    """
+    """"""
 if __name__ == "__main__":
     main()
 

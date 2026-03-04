@@ -9,9 +9,14 @@ from app import app
 ###############################################################
 ######### Database global for module use ######################
 ###############################################################
-app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
-db = SQLAlchemy(app)
+
+
+#app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
+#app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
+
+#db = SQLAlchemy(app)
+
+
 
 
 
@@ -169,7 +174,7 @@ class Timetable(db.Model):
     end_time = db.Column(db.DateTime, nullable=True)##unix tms
     is_booked = db.Column(db.Boolean,nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
-    jobs = db.relationship("Job",  back_populates = "timetables")###relation
+    job = db.relationship("Job",  back_populates = "timetable")###relation
 
     
     def serialize(self):
@@ -212,10 +217,6 @@ class Timetable(db.Model):
             "type": "boolean"
         }
         return schema
-
-
-def init():
-    instantiateDatabase()
 
 
 ###############################################################
@@ -434,12 +435,19 @@ def update_user(user, request_json):
     """
     try:
         with app.app_context():
+            """If user is none then create new. Otherwise update."""
+            if user is None:
+                user = User()
+                user = user.deserialize(request_json) 
+                db.session.add(user)
+                db.session.commit()
+                return user
             user = user.deserialize(request_json) 
             db.session.commit()
-            return True
+            return user
     except Exception as e:
-        print("query failed ", e)
-        return False
+        print("Put failed. Username already in use perhaps?", e)
+        return None
 
 ##JOB RELATED
 def update_job(job, request_json):    
@@ -449,12 +457,18 @@ def update_job(job, request_json):
     """
     try:
         with app.app_context():
+            if job is None:
+                job = Job()
+                job = job.deserialize(request_json)
+                db.session.add(job)
+                db.session.commit()
+                return job
             job = job.deserialize(request_json)
             db.session.commit()
-            return True
+            return job
     except Exception as e:
         print("qieru failed ", e)
-        return False
+        return None
    
 
 ###############################################################
@@ -463,7 +477,7 @@ def update_job(job, request_json):
 
 ###chatGPT
 user_test_packet = {
-    "username": "testuser",
+    "username": "un",
     "password": "securepassword123",  # hash this later if you haven't yet
     "email": "testuser@example.com",
     "address": "123 Main Street, Springfield",
@@ -473,7 +487,7 @@ user_test_packet = {
 
 job_test_packet = {
     "userID": 1,  # make sure this user ID exists in your User table
-    "jobDescription": "Looking for a part-time barista for weekend shifts",
+    "job_description": "Looking for a part-time barista for weekend shifts",
     "job_name": "Barista at coffee shop",
     "timetable": {
         "title": "Weekend Morning Shift",
@@ -482,46 +496,47 @@ job_test_packet = {
         "is_booked": False
     },
     "location": "Downtown Cafe, Springfield",
-    "created": "2026-02-09",  # or datetime.utcnow() if your model expects a datetime
     "opening_hours": "08:00-14:00",
     "category": "Hospitality"
 }
 ###chatGPT ends
 
+
 def populate_database():
     """Function for populating the database users and jobs, change values on the size you want"""
+    users = query_user_all()
+    if users is None:
+        userscount = 0
+    else:
+        userscount = len(users)
     samplesize = 50
     userdata= user_test_packet
     runningNumber_user = userdata["username"]
     jobdata= job_test_packet
-    for i in range(samplesize):
-        userdata["username"] = runningNumber_user+f'": "+{i}'
+
+    for i in range(userscount,userscount+samplesize):
+        userdata["username"] = runningNumber_user+f'{datetime.datetime.now()}'
         print(" USERNAMES::"+userdata["username"])
         insertUser(userdata)
 
-    for i in range(samplesize-25):
-        #randomUser= random.randrange(1,samplesize-25)
-        #print(randomUser)
-        #jobdata["userID"]= randomUser
-        #insertJob(jobdata)
-        users = query_user_all()
-        #print("all users: ", users)
-        if users == -1:
+    users = query_user_all()
+    if users is None:
             print("No users available, aborting job creation")
-        else:
-            random_int = random.randrange(len(users)) # type: ignore
-            #print("random index:", random_int)
-            #print("Selected user dict:", users[random_int])
-            jobdata["UserID"] = users[random_int]["id"] # type: ignore
+    else:
+        for i in range(samplesize-25):
+            randomUser= random.randrange(1,len(users))
+            print(randomUser)
+            jobdata["user_id"]= randomUser
+            jobdata["job_name"] = "j_name:"+f'{datetime.datetime.now()}'
             insertJob(jobdata)
-
+            
 def main():
     """test for populating the database by running this module dircetly. """
-    init()
+    #init()
+
+    pass
 
 
 
 if __name__ == '__main__':
     main()
-else:
-    init()

@@ -1,7 +1,8 @@
 from datetime import datetime
 from typing import Any
 from flask import Flask, Response, request
-from flask_restful import Resource
+from flask_caching import Cache
+from flask_restful import Api, Resource
 from flask_sqlalchemy import SQLAlchemy
 from jsonschema import validate, ValidationError, FormatChecker
 from sqlalchemy.exc import IntegrityError
@@ -12,8 +13,9 @@ from werkzeug.routing import BaseConverter
 from db_package import Database
 
 from app import app
-from app import api
-##?? maybe execudet after database initiation??
+
+api = Api(app)
+cache = Cache(app)
 
 
 @event.listens_for(Engine, "connect")
@@ -22,11 +24,13 @@ def set_mysql_pragma(dbapi_connection, connection_record):
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
+def init ():
+    pass
 
 ##user resources
 
 class UserItem(Resource):
-    
+    @cache.cached()
     def get(self, user):
         return Database.User.serialize(user)
 
@@ -68,6 +72,7 @@ class UserItem(Resource):
         return Response(status=400)
 
 class UserCollection(Resource):
+
     def get(self):
         users = Database.query_user_all()
         return users
@@ -125,7 +130,7 @@ class JobCollection(Resource):
 
 #implement these
 class JobItem(Resource):
-
+    @cache.cached()
     def get(self, job):
         return Database.User.serialize(job)
 
@@ -152,6 +157,21 @@ class JobItem(Resource):
         if Database.delete_job(job):
             return Response(status=204)
         return Response(status=400)
+
+
+class TimeTableCollection(Resource):
+    
+    def get(self, timetable):
+        pass
+
+    def put(self, timetable):
+        pass
+
+    def post(self, timetable):
+        pass
+
+    def delete(self, timetable):
+        pass
 
 class TimeTableItem(Resource):
     
@@ -224,5 +244,6 @@ api.add_resource(JobItem, "/api/jobs/<JobItem>")
 api.add_resource(UserCollection, "/api/users")
 api.add_resource(UserItem, "/api/users/<UserItem>")
 
-api.add_resource(TimeTableItem, "api/jobs/<JobItem>/<TimeTableItem>")
+api.add_resource(TimeTableItem, "api/jobs/<JobItem>/TimeTable/<TimeTableItem>")
+api.add_resource(TimeTableCollection, "api/jobs/<JobItem>/TimeTable")
 
