@@ -1,33 +1,53 @@
-
 import pytest
-from db_package import Database
+from vainamoinen import db, create_app
+from vainamoinen.Database import User
 
-###chatGTP
-user_packet = {
-    "username": "testuser",
-    "password": "securepassword123",  # hash this later if you haven't yet
-    "email": "testuser@example.com",
-    "address": "123 Main Street, Springfield",
-    "phoneNumber": "555-123-4567",
-    "description": "Test user account for database insertion"
-}
-###end chatGPT
+@pytest.fixture
+def db_handle():
+    config = {
+        "SQLALCHEMY_DATABASE_URI": "sqlite:///test.db",
+        "TESTING": True,
+        "CACHE_TYPE": "SimpleCache"
+    }
 
+    app = create_app(config)
 
-def test_user():
-    """Test creating a new user"""
-    print("running_test user")
-    user = Database.User(
-                username= user_packet["username"],  # type: ignore
-                password= user_packet["password"], # type: ignore
-                email= user_packet["email"], # type: ignore
-                address= user_packet["address"], # type: ignore
-                phoneNumber= user_packet["phoneNumber"], # type: ignore
-                description= user_packet["description"] # type: ignore
-                )
-    
-    assert user.username == 'testuser'
+    ctx = app.app_context()
+    ctx.push()
+
+    db.create_all()
+    yield db
+
+    db.session.rollback()
+    db.drop_all()
+    db.session.remove()
+    ctx.pop()
 
 
+def _get_user(number):
+    '''
+    Creates a valid user object to be used for DB tests.
+    '''
+
+    return User(
+        username = "test-user-{}".format(number),
+        password = "1234",
+        email = "email{}.com".format(number),
+        address = "Test Street 1",
+        phone_number = "123 456 7890",
+        description = "This is a Test User"
+    )
 
 
+def test_add_user(db_handle):
+    '''
+    Test adding 1 new user
+    '''
+    user = _get_user(1)
+    db_handle.session.add(user)
+    db_handle.session.commit()
+
+    assert User.query.count() == 1
+
+
+# Database test here:
