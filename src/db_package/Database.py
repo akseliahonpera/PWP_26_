@@ -4,15 +4,15 @@ from flask_sqlalchemy import SQLAlchemy
 import config
 from sqlalchemy_utils import database_exists
 import random 
-from app import app
+from instance_reference import db
 
 ###############################################################
 ######### Database global for module use ######################
 ###############################################################
 
-db = SQLAlchemy(app)
 
 
+print("db module initialization")
 
 ###############################################################
 ######### Models             ##################################
@@ -224,12 +224,12 @@ def init():
 
 def instantiateDatabase(): 
     """Creates all tables(defined models related to db) to the database, if this fails create the database itself first."""
-    with app.app_context():
-        if database_exists(f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'):
-            ##This creates tables if they are not existing already. Works only if db already exists.
-            db.create_all()
-        else:
-            print("database does not exist")
+
+    if database_exists(f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'):
+        ##This creates tables if they are not existing already. Works only if db already exists.
+        db.create_all()
+    else:
+        print("database does not exist")
 
 def createDataBase():
     """If database does not yet exist, create database to the database engine. """
@@ -243,26 +243,24 @@ def createDataBase():
 def insertUser(request_json):##MAybe implements checking if resource exists already??
     """"Gets user dict as parameter. Returns true or false depending on success."""
     try:
-        with app.app_context():
-            user = User()
-            user.deserialize(request_json)
-            db.session.add(user)
-            db.session.commit()
-            return user
+        user = User()
+        user.deserialize(request_json)
+        db.session.add(user)
+        db.session.commit()
+        return user
     except Exception as e:
         print("failed to insert user", e)
-        return None
+    return None
 
 ##JOB RELATED
 def insertJob(request_json):
     """"Gets job dict. Returns true or false depending on success."""
     try: 
-        with app.app_context():
-            job = Job()
-            job.deserialize(request_json)
-            db.session.add(job)
-            db.session.commit()
-            return job
+        job = Job()
+        job.deserialize(request_json)
+        db.session.add(job)
+        db.session.commit()
+        return job
     except Exception as e:
         print("insert job failure", e)
         return None
@@ -276,14 +274,14 @@ def query_user_all():
     """Returns all users as list[dictionary]
     """
     try:
-        with app.app_context(): 
-            user_rs= User.query.all()
-            result_dict_list = []
-            ##serialize to json list (dict)
-            for i in user_rs:
-                result_dict_list.append(User.serialize(i))
-            #print(querything)
-            return result_dict_list
+
+        user_rs= User.query.all()
+        result_dict_list = []
+        ##serialize to json list (dict)
+        for i in user_rs:
+            result_dict_list.append(User.serialize(i))
+        #print(querything)
+        return result_dict_list
 
     except Exception as e:
         print("query failed ", e)
@@ -298,14 +296,14 @@ def query_user(request_json):
     Returns results as List[dictionary]
     """
     try:
-        with app.app_context(): 
-            user_rs= db.session.query(User).filter_by(**request_json).all()
-            result_dict_list = []
-             ##serialize to json list (dict)
-            for i in user_rs:
-                result_dict_list.append(User.serialize(i))
-            #print(querything)
-            return result_dict_list
+
+        user_rs= db.session.query(User).filter_by(**request_json).all()
+        result_dict_list = []
+            ##serialize to json list (dict)
+        for i in user_rs:
+            result_dict_list.append(User.serialize(i))
+        #print(querything)
+        return result_dict_list
 
     except Exception as e:
         print("qiuery failed ", e)
@@ -315,14 +313,14 @@ def query_user(request_json):
 def query_job_all():
     """Query all jobs currently, Returns list[dict] of jobs"""
     try:
-        with app.app_context():
-            job_rs= Job.query.all()
-            result_dict_list = []
-             ##serialize to json list
-            for i in job_rs:       
-                result_dict_list.append(Job.serialize(i))
-            #print(querything)
-            return result_dict_list 
+
+        job_rs= Job.query.all()
+        result_dict_list = []
+            ##serialize to json list
+        for i in job_rs:       
+            result_dict_list.append(Job.serialize(i))
+        #print(querything)
+        return result_dict_list 
     except Exception as e:
         print("qieru failed ", e)
         return None
@@ -331,15 +329,14 @@ def query_job(request_json):
     """takes dictionary as parameter, builds query based on that"""
     print("Try job querying.")
     try:
-        with app.app_context():
-            
-            job_rs = db.session.query(Job).filter_by(**request_json).all()
-            result_dict_list = []
-             ##serialize to json list
-            for i in job_rs:       
-                result_dict_list.append(Job.serialize(i))
-            #print(querything)
-            return result_dict_list
+
+        job_rs = db.session.query(Job).filter_by(**request_json).all()
+        result_dict_list = []
+            ##serialize to json list
+        for i in job_rs:       
+            result_dict_list.append(Job.serialize(i))
+        #print(querything)
+        return result_dict_list
 
     except Exception as e:
         print("query failed ", e)
@@ -353,12 +350,11 @@ def query_job(request_json):
 def delete_user(user):
     """Delete user by object. Returns true if success, false otherwise"""
     try:
-        with app.app_context():
 
-            db.session.delete(user)
-            db.session.commit()
-            print("user deletion succesfull")
-            return True
+        db.session.delete(user)
+        db.session.commit()
+        print("user deletion succesfull")
+        return True
     except Exception as e:
         print("user deletion failed, try cascading delete?", e)
         return False
@@ -367,15 +363,14 @@ def delete_user(user):
 def delete_user_by_id(user_id):
     """Delete user by id. Returns true if success, false otherwise"""
     try:
-        with app.app_context():
-            print("q1")
-            user = User.query.filter_by(id=user_id).first()
-            print("q2 ")
-            print(user)
-            db.session.delete(user)
-            db.session.commit()
-            print("user deletion succesfull")
-            return True
+        print("q1")
+        user = User.query.filter_by(id=user_id).first()
+        print("q2 ")
+        print(user)
+        db.session.delete(user)
+        db.session.commit()
+        print("user deletion succesfull")
+        return True
     except Exception as e:
         print("user deletion failed, try cascading delete?", e)
         return False
@@ -385,12 +380,12 @@ def delete_user_by_id(user_id):
 def delete_job_by_request_json(request_json):
     """Delete job by request_json. Returns true if success, false otherwise"""
     try:
-        with app.app_context():
-            job = Job.query.filter_by(job_name=request_json["job_name"]).first()
-            db.session.delete(job)
-            db.session.commit()
-            print("Job deletion succesfull")
-            return True
+
+        job = Job.query.filter_by(job_name=request_json["job_name"]).first()
+        db.session.delete(job)
+        db.session.commit()
+        print("Job deletion succesfull")
+        return True
     except Exception as e:
         print("job deletion failed ", e)
         return False
@@ -398,11 +393,10 @@ def delete_job_by_request_json(request_json):
 def delete_job(job):
     """Delete by job object. Returns true if success, false otherwise"""
     try:
-        with app.app_context():
-            db.session.delete(job)
-            db.session.commit()
-            print("Job deletion succesfull")
-            return True
+        db.session.delete(job)
+        db.session.commit()
+        print("Job deletion succesfull")
+        return True
     except Exception as e:
         print("job deletion failed ", e)
         return False
@@ -411,12 +405,11 @@ def delete_job(job):
 def delete_job_by_id(job_id):
     """Delete by id. Returns true if success, false otherwise"""
     try:
-        with app.app_context():
-            job = Job.query.filter_by(id=job_id).first()
-            db.session.delete(job)
-            db.session.commit()
-            print("Job deletion succesfull")
-            return True
+        job = Job.query.filter_by(id=job_id).first()
+        db.session.delete(job)
+        db.session.commit()
+        print("Job deletion succesfull")
+        return True
     except Exception as e:
         print("job deletion failed ", e)
         return False
@@ -432,17 +425,16 @@ def update_user(user, request_json):
         Gets update target user object and the update data as json dict, locates user and makes changes according to the new packet,shitty
     """
     try:
-        with app.app_context():
-            """If user is none then create new. Otherwise update."""
-            if user is None:
-                user = User()
-                user = user.deserialize(request_json) 
-                db.session.add(user)
-                db.session.commit()
-                return user
+        """If user is none then create new. Otherwise update."""
+        if user is None:
+            user = User()
             user = user.deserialize(request_json) 
+            db.session.add(user)
             db.session.commit()
             return user
+        user = user.deserialize(request_json) 
+        db.session.commit()
+        return user
     except Exception as e:
         print("Put failed. Username already in use perhaps?", e)
         return None
@@ -454,16 +446,15 @@ def update_job(job, request_json):
         Locate job by given id and change according to the job packet
     """
     try:
-        with app.app_context():
-            if job is None:
-                job = Job()
-                job = job.deserialize(request_json)
-                db.session.add(job)
-                db.session.commit()
-                return job
+        if job is None:
+            job = Job()
             job = job.deserialize(request_json)
+            db.session.add(job)
             db.session.commit()
             return job
+        job = job.deserialize(request_json)
+        db.session.commit()
+        return job
     except Exception as e:
         print("qieru failed ", e)
         return None
@@ -538,3 +529,7 @@ if __name__ == '__main__':
     main()
 else:
     init()
+
+
+
+print("db module initialization end")

@@ -1,12 +1,11 @@
-import datetime
 import os
-
 from flask_caching import Cache
 from flask_restful import Api
-from db_package import Database
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import config
+
+from instance_reference import db,api,cache ##chatgpt
 
 app = Flask(__name__)
 app.config["CACHE_TYPE"] = "FileSystemCache"
@@ -15,21 +14,34 @@ app.config["CACHE_DIR"] = os.path.join(app.instance_path, "cache")
 app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
 
+db.init_app(app)
+api.init_app(app)
+cache.init_app(app)
+
+with app.app_context():
+    import api
 
 
-api = Api(app)
-cache = Cache(app)
+with app.app_context():
+    from db_package import Database
+    Database.instantiateDatabase()
+
 
 
 
 def main():
+    print("Main")
+    print(app.config["SQLALCHEMY_DATABASE_URI"])
 
-    pass
-    
-    
-    #testfunction()
- 
 ##For testing the database functions
+
+if __name__ == "__main__":
+    main()
+
+
+
+
+"""
 def testfunction():
     job_test_packet2 = {'id': 4,}
     user_test_packet2 = {'id': 4,}
@@ -57,8 +69,4 @@ def testfunction():
     if users:
         for user in users: # type: ignore
             print(user)
-
-    """"""
-if __name__ == "__main__":
-    main()
-
+    """
