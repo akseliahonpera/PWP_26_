@@ -106,7 +106,7 @@ class UserCollection(Resource):
 #implement these
 class JobCollection(Resource):
 
-    def get(self, job):
+    def get(self, jobs):
         jobs = Database.query_job_all()
         return jobs
 
@@ -137,7 +137,7 @@ class JobCollection(Resource):
 class JobItem(Resource):
 
     def get(self, job):
-        return Database.User.serialize(job)
+        return Database.Job.serialize(job)
 
     def put(self, job):
         pass
@@ -180,7 +180,7 @@ class TimeTableItem(Resource):
             raise BadRequest(description=str(e))
         
         try:
-            Database.insertJob(timetable)
+            Database.insertTimetable(timetable)
         except IntegrityError:
             raise Conflict(
                 description="something shitty happened in timetable post"
@@ -234,10 +234,12 @@ app.url_map.converters["user"] = UserConverter
 #tänne seuraavat
 
 api.add_resource(JobCollection, "/api/jobs")
-api.add_resource(JobItem, "/api/jobs/<job>")
+api.add_resource(JobItem, "/api/jobs/<job:job>")
 api.add_resource(UserCollection, "/api/users")
-api.add_resource(UserItem, "/api/users/<user>")
+api.add_resource(UserItem, "/api/users/<user:user>")
 
-api.add_resource(TimeTableItem, "api/jobs/<JobItem>/<TimeTableItem>")
+
+
+api.add_resource(TimeTableItem, "/api/jobs/<job:job>/timetable/<timetable:timetable>")
 
 print("api initialization end")
