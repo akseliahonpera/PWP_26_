@@ -1,42 +1,31 @@
+'''
+Database models and functions
+'''
+
 import datetime
-from flask import jsonify
-from flask_sqlalchemy import SQLAlchemy
-from . import config
-from sqlalchemy_utils import database_exists
-import random 
+import random
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
 from . import db
 
 @event.listens_for(Engine, "connect")
-def set_mysql_pragma(dbapi_connection, connection_record):
+def set_mysql_pragma(dbapi_connection, _):
+    '''Enable foreign keys'''
     cursor = dbapi_connection.cursor()
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
+
 
 ###############################################################
 ######### Database global for module use ######################
 ###############################################################
 
 
-#app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'
-#app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
-
-#db = SQLAlchemy(app)
-
-
-
-
-
-###############################################################
-######### Models             ##################################
-###############################################################
-
-
-
-
 class User(db.Model):
+    '''
+    User database model
+    '''
 
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique= True, nullable=False) ##set unique to false to test
@@ -49,6 +38,9 @@ class User(db.Model):
     job = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
     def serialize(self, include_jobs=False):
+        '''
+        TODO: doc-string
+        '''
         user = {
             "id": self.id,
             "username": self.username,
@@ -63,8 +55,11 @@ class User(db.Model):
             for single_job in self.job: # type: ignore
                 user["jobs"].append(single_job.serialize())
         return user
-    
+
     def deserialize(self, user):
+        '''
+        TODO: doc-string
+        '''
         self.username = user["username"]
         self.password = user["password"]
         self.email = user["email"]
@@ -74,6 +69,9 @@ class User(db.Model):
 
     @staticmethod
     def json_schema():
+        '''
+        TODO: doc-string
+        '''
         schema = {
             "type": "object",
             "required": ["username", "password","email","address","phone_number","description"]
@@ -105,51 +103,106 @@ class User(db.Model):
         }
         return schema
 
+    @classmethod
+    def query_all(cls):
+        '''
+        Get all users from database
+        '''
+        user_list = []
+        users = cls.query.all()
+        for user in users:
+            user_list.append(user.serialize())
+        return user_list
+
+    @classmethod
+    def insert(cls, request_json):
+        '''
+        Insert a new user into database with request_json
+        '''
+        user = cls()
+        user.deserialize(request_json)
+        db.session.add(user)
+        db.session.commit()
+        return user
+
+    def update(self, request_json):
+        '''
+        Update a user in database with request_json
+        '''
+        self.deserialize(request_json)
+        db.session.add(self)
+        db.session.commit()
+        return self
+
+    def delete(self):
+        '''
+        Delete a user from database
+        '''
+        db.session.delete(self)
+        db.session.commit()
+
+
+
+
+
 class Job(db.Model):
-  
+    '''
+    Job database model
+    '''
+
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
-    job_name = db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
-    job_description = db.Column(db.String(255), nullable=False) 
+    username=db.Column(db.String(32),db.ForeignKey(User.username,ondelete="CASCADE"),nullable=False)
+    job_name = db.Column(db.String(63),unique=True, nullable=False)#lisätty kenttä resursseja varte
+    job_description = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(63),nullable=False)
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
     user = db.relationship("User",  back_populates = "job")###relation
     timetable = db.relationship("Timetable",cascade="all,delete-orphan", back_populates= "job")
-    
+
     def serialize(self):
-        job = {
+        '''
+        TODO: doc-string
+        '''
+        return {
             "id": self.id,
-            "user_id": self.user_id,
+            "username": self.username,
             "job_name": self.job_name,
             "job_description": self.job_description,
             "location": self.location,
-            "created": self.created,
+            "created": self.created.isoformat(),
             "opening_hours": self.opening_hours,
             "category": self.category,
             "user": self.user.serialize()
         }
-        return job
-    
+
     def deserialize(self, job):
-        self.user_id=job["user_id"]
+        '''
+        TODO: doc-string
+        '''
+        self.username=job["username"]
         self.job_name=job["job_name"]
         self.job_description=job["job_description"]
         self.location=job["location"]
         self.opening_hours=job["opening_hours"]
         self.category=job["category"]
-        #self.user=job["user"]
 
     @staticmethod
     def json_schema():
+        '''
+        TODO: doc-string
+        '''
         schema = {
             "type": "object",
-            "required": ["user_id", "job_description","location","opening_hours","category","user"]
+            "required":[
+                "username","job_name","job_description",
+                "location","opening_hours","category"
+            ]
         }
         props = schema["properties"] = {}
-        props["user_id"] = {
-            "description": "Jobs unique uuserID",
+        props["username"] = {
+            "description": "User's name",
             "type": "string"
         }
         props["job_name"] = {
@@ -172,19 +225,53 @@ class Job(db.Model):
             "description": "category",
             "type": "string"
         }
-        props["user"] = {
-            "description": "user reference object",
-            "type": "object"
-        }
         return schema
-    
+
+    @classmethod
+    def query_all(cls):
+        '''
+        Get all jobs from database
+        '''
+        job_list = []
+        jobs = cls.query.all()
+        for job in jobs:
+            job_list.append(job.serialize())
+        return job_list
+
+    @classmethod
+    def insert(cls, request_json):
+        '''
+        Insert a new job into database with request_json
+        '''
+        job = cls()
+        job.deserialize(request_json)
+        db.session.add(job)
+        db.session.commit()
+        return job
+
+    def update(self, request_json):
+        '''
+        Update a job in database with request_json
+        '''
+        self.deserialize(request_json)
+        db.session.add(self)
+        db.session.commit()
+        return self
+
+    def delete(self):
+        '''
+        Delete a job from database
+        '''
+        db.session.delete(self)
+        db.session.commit()
 
 
-    
 class Timetable(db.Model):
-
+    '''
+    Timetable database model
+    '''
     id = db.Column(db.Integer, primary_key=True)
-    job_id = db.Column(db.Integer, db.ForeignKey(Job.id, ondelete="CASCADE"),  nullable=False) # type: ignore
+    job_id = db.Column(db.Integer, db.ForeignKey(Job.id,ondelete="CASCADE"),nullable=False)
     title= db.Column(db.String(63), nullable=False)####lisätty kenttä resursseja varten
     start_time = db.Column(db.DateTime, nullable=True)##unix tms
     end_time = db.Column(db.DateTime, nullable=True)##unix tms
@@ -192,8 +279,11 @@ class Timetable(db.Model):
     created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
     job = db.relationship("Job",  back_populates = "timetable")###relation
 
-    
+
     def serialize(self):
+        '''
+        TODO: doc-string
+        '''
         timetable = {"id":self.id}
         timetable["title"]=self.title
         timetable["start_time"]=self.start_time.isoformat()
@@ -201,8 +291,11 @@ class Timetable(db.Model):
         timetable["is_booked"]=self.is_booked
         timetable["created"]=self.created.isoformat()
         return timetable
-    
+
     def deserialize(self, timetable):
+        '''
+        TODO: doc-string
+        '''
         self.title  = timetable["title"]
         self.start_time = timetable["start_time"]
         self.end_time = timetable["end_time"]
@@ -211,6 +304,9 @@ class Timetable(db.Model):
 
     @staticmethod
     def json_schema():
+        '''
+        TODO: doc-string
+        '''
         schema = {
             "type": "object",
             "required": ["title", "start_time","end_time","is_booked"]
@@ -235,239 +331,28 @@ class Timetable(db.Model):
         return schema
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 ###############################################################
 ######### Database functions ##################################
 ###############################################################
 
 def init_db():
+    ''' Initialize database '''
     db.create_all()
 
-def instantiateDatabase(): 
-    """Creates all tables(defined models related to db) to the database, if this fails create the database itself first."""
-    if database_exists(f'mysql+pymysql://{config.MYSQL_USER}:{config.MYSQL_PASSWORD}@{config.MYSQL_HOST}:{config.MYSQL_PORT}/{config.MYSQL_DB}?charset=utf8mb4'):
-        ##This creates tables if they are not existing already. Works only if db already exists.
-        db.create_all()
-    else:
-        print("database does not exist")
-
-def createDataBase():
-    """If database does not yet exist, create database to the database engine. """
-    raise NotImplementedError
-
-###############################################################
-######### Insertions ##########################################
-###############################################################
-
-##USER RELATED
-def insertUser(request_json):##MAybe implements checking if resource exists already??
-    """"Gets user dict as parameter. Returns the user, possible IntegrityError is handled in post method."""
-    user = User()
-    user.deserialize(request_json)
-    db.session.add(user)
-    db.session.commit()
-    return user
-
-##JOB RELATED
-def insertJob(request_json):
-    """"Gets job dict. Returns true or false depending on success."""
-    try: 
-        job = Job()
-        job.deserialize(request_json)
-        db.session.add(job)
-        db.session.commit()
-        return job
-    except Exception as e:
-        print("insert job failure", e)
-        return None
-
-###############################################################
-######### Queries #############################################
-###############################################################
-
-##USER RELATED
-def query_user_all():
-    """Returns all users as list[dictionary]
-    """
-    try:
-        user_rs= User.query.all()
-        result_dict_list = []
-        ##serialize to json list (dict)
-        for i in user_rs:
-            result_dict_list.append(User.serialize(i))
-        #print(querything)
-        return result_dict_list
-
-    except Exception as e:
-        print("query failed ", e)
-        return None
-
-    
-#https://stackoverflow.com/questions/6718480/sqlalchemy-orm-declarative-how-to-build-query-from-key-values-in-a-dict?rq=3
-def query_user(request_json):
-    """Dynamic/Generic query method. 
-    Takes json object/python dict as parameter, which contains the query data for the user.
-        eg. {'id': 4,}
-    Returns results as List[dictionary]
-    """
-    try:
-        user_rs= db.session.query(User).filter_by(**request_json).all()
-        result_dict_list = []
-        ##serialize to json list (dict)
-        for i in user_rs:
-            result_dict_list.append(User.serialize(i))
-        #print(querything)
-        return result_dict_list
-
-    except Exception as e:
-        print("qiuery failed ", e)
-        return None
-
-##JOB RELATED    
-def query_job_all():
-    """Query all jobs currently, Returns list[dict] of jobs"""
-    try:
-        job_rs= Job.query.all()
-        result_dict_list = []
-        ##serialize to json list
-        for i in job_rs:       
-            result_dict_list.append(Job.serialize(i))
-        #print(querything)
-        return result_dict_list 
-    except Exception as e:
-        print("qieru failed ", e)
-        return None
-    
-def query_job(request_json):
-    """takes dictionary as parameter, builds query based on that"""
-    print("Try job querying.")
-    try:
-        job_rs = db.session.query(Job).filter_by(**request_json).all()
-        result_dict_list = []
-        ##serialize to json list
-        for i in job_rs:       
-            result_dict_list.append(Job.serialize(i))
-        #print(querything)
-        return result_dict_list
-
-    except Exception as e:
-        print("query failed ", e)
-        return None
-
-###############################################################
-######### Delete functions   ##################################
-###############################################################
-
-##USER RELATED
-def delete_user(user):
-    """Delete user by object. Returns true if success, false otherwise"""
-    try:
-        db.session.delete(user)
-        db.session.commit()
-        print("user deletion succesfull")
-        return True
-    except Exception as e:
-        print("user deletion failed, try cascading delete?", e)
-        return False
 
 
-def delete_user_by_id(user_id):
-    """Delete user by id. Returns true if success, false otherwise"""
-    try:
-        print("q1")
-        user = User.query.filter_by(id=user_id).first()
-        print("q2 ")
-        print(user)
-        db.session.delete(user)
-        db.session.commit()
-        print("user deletion succesfull")
-        return True
-    except Exception as e:
-        print("user deletion failed, try cascading delete?", e)
-        return False
-
-
-##JOB RELATED
-def delete_job_by_request_json(request_json):
-    """Delete job by request_json. Returns true if success, false otherwise"""
-    try:
-        job = Job.query.filter_by(job_name=request_json["job_name"]).first()
-        db.session.delete(job)
-        db.session.commit()
-        print("Job deletion succesfull")
-        return True
-    except Exception as e:
-        print("job deletion failed ", e)
-        return False
-
-def delete_job(job):
-    """Delete by job object. Returns true if success, false otherwise"""
-    try:
-        db.session.delete(job)
-        db.session.commit()
-        print("Job deletion succesfull")
-        return True
-    except Exception as e:
-        print("job deletion failed ", e)
-        return False
-
-
-def delete_job_by_id(job_id):
-    """Delete by id. Returns true if success, false otherwise"""
-    try:
-        job = Job.query.filter_by(id=job_id).first()
-        db.session.delete(job)
-        db.session.commit()
-        print("Job deletion succesfull")
-        return True
-    except Exception as e:
-        print("job deletion failed ", e)
-        return False
-
-###############################################################
-######### Update functions   ##################################
-###############################################################
- 
-##USER RELATED
-def update_user(user, request_json):
-    """ 
-        Make sure only authorized users can access this per user!! 
-        Gets update target user object and the update data as json dict, locates user and makes changes according to the new packet,shitty
-    """
-    try:
-        """If user is none then create new. Otherwise update."""
-        if user is None:
-            user = User()
-            user = user.deserialize(request_json) 
-            db.session.add(user)
-            db.session.commit()
-            return user
-        user = user.deserialize(request_json) 
-        db.session.commit()
-        return user
-    except Exception as e:
-        print("Put failed. Username already in use perhaps?", e)
-        return None
-
-##JOB RELATED
-def update_job(job, request_json):    
-    """ Kinda unsafe.
-        Make sure only authorized users can access this per job!! 
-        Locate job by given id and change according to the job packet
-    """
-    try:
-        if job is None:
-            job = Job()
-            job = job.deserialize(request_json)
-            db.session.add(job)
-            db.session.commit()
-            return job
-        job = job.deserialize(request_json)
-        db.session.commit()
-        return job
-    except Exception as e:
-        print("qieru failed ", e)
-        return None
-   
 
 ###############################################################
 ######### Testing stuff      ##################################
@@ -502,39 +387,35 @@ job_test_packet = {
 
 def populate_database():
     """Function for populating the database users and jobs, change values on the size you want"""
-    users = query_user_all()
+    users = User.query_all()
     if users is None:
         userscount = 0
     else:
         userscount = len(users)
     samplesize = 50
     userdata= user_test_packet
-    runningNumber_user = userdata["username"]
+    running_number_user = userdata["username"]
     jobdata= job_test_packet
 
-    for i in range(userscount,userscount+samplesize):
-        userdata["username"] = runningNumber_user+f'{datetime.datetime.now()}'
+    for _ in range(userscount,userscount+samplesize):
+        userdata["username"] = running_number_user+f'{datetime.datetime.now()}'
         print(" USERNAMES::"+userdata["username"])
-        insertUser(userdata)
+        User.insert(userdata)
 
-    users = query_user_all()
+    users = User.query_all()
     if users is None:
-            print("No users available, aborting job creation")
+        print("No users available, aborting job creation")
     else:
-        for i in range(samplesize-25):
-            randomUser= random.randrange(1,len(users))
-            print(randomUser)
-            jobdata["user_id"]= randomUser
+        for _ in range(samplesize-25):
+            random_user= random.randrange(1,len(users))
+            print(random_user)
+            jobdata["user_id"]= random_user
             jobdata["job_name"] = "j_name:"+f'{datetime.datetime.now()}'
-            insertJob(jobdata)
-            
+            Job.insert(jobdata)
+
 def main():
     """test for populating the database by running this module dircetly. """
     #init()
-
-    pass
-
-
 
 if __name__ == '__main__':
     main()

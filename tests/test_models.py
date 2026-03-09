@@ -1,6 +1,10 @@
+'''
+Database model tests
+'''
+
 import pytest
 from vainamoinen import db, create_app
-from vainamoinen.Database import User
+from vainamoinen.database import User
 
 @pytest.fixture
 def db_handle():

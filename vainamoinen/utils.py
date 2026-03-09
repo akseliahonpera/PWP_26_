@@ -1,35 +1,64 @@
-from werkzeug.exceptions import Forbidden, NotFound
+'''
+Converters and stuff
+'''
+
+from werkzeug.exceptions import NotFound#, Forbidden
 from werkzeug.routing import BaseConverter
 
-from vainamoinen import Database
+from .database import Job, User#, Timetable
 
 class JobConverter(BaseConverter):
+    '''
+    TODO: doc-string
+    '''
 
-    def to_python(self, job_name): # type: ignore #id?
-        job = Database.query_job({"job_name":job_name})
-        if job is None:
+    def to_python(self, value):
+        '''
+        TODO: doc-string
+        '''
+        db_sensor = Job.query.filter_by(job_name=value).first()
+        if db_sensor is None:
             raise NotFound
-        return job
-    
-    def to_url(self, job): # type: ignore
-        return Database.Job.serialize(job)["job_name"]
+        return db_sensor
+
+    def to_url(self, value):
+        '''
+        TODO: doc-string
+        '''
+        return value.job_name
 
 
 class UserConverter(BaseConverter):
+    '''
+    TODO: doc-string
+    '''
 
-    def to_python(self, user_name):
-        db_user = Database.User.query.filter_by(username=user_name).first()
+    def to_python(self, value):
+        '''
+        TODO: doc-string
+        '''
+        db_user = User.query.filter_by(username=value).first()
         if db_user is None:
             raise NotFound
         return db_user
 
-    def to_url(self, user): # type: ignore
-        return Database.User.serialize(user)["username"]
+    def to_url(self, value):
+        '''
+        TODO: doc-string
+        '''
+        return value.username
 
-##implement this
+##TODO: implement this
 class TimeTableConverter(BaseConverter):
-    def to_python(self, timetable_name): # type: ignore
-        pass
-    
-    def to_url(self, timetable): # type: ignore
-        return Database.Timetable.serialize(timetable)["title"]
+    '''
+    TODO: doc-string
+    '''
+    def to_python(self, value):
+        '''
+        TODO: doc-string
+        '''
+
+    def to_url(self, value):
+        '''
+        TODO: doc-string
+        '''
