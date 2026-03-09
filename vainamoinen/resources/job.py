@@ -79,3 +79,14 @@ class JobCollection(Resource):
                 description="Error in JobCollection post."
             )
         return Response(status=201, headers={"Location":url_for("api.jobitem", job=job)})
+
+
+class UserItemsJobCollection(Resource):
+
+    def get(self, user):
+        '''
+        Get user's jobs
+        '''
+        return Job.query_all(filter_name=user.username)
+
+    # get probably enough

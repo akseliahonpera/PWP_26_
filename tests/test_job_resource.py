@@ -186,3 +186,28 @@ class TestJobItem:
         '''
         resp = client.delete(self.INVALID_JOB_URL)
         assert resp.status_code == 404
+
+
+
+
+class TestUserItemsJobCollection:
+    RESOURCE_URL_1 = "/api/users/test-user-1/jobs"
+    RESOURCE_URL_2 = "/api/users/test-user-2/jobs"
+
+    def test_get(self, client):
+        '''
+        Test getting users' jobs
+        test_user_1 should have 1 job.
+        test_user_2 should have 0 jobs
+        '''
+        resp = client.get(self.RESOURCE_URL_1)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body) == 1
+
+        resp = client.get(self.RESOURCE_URL_2)
+        assert resp.status_code == 200
+        body = json.loads(resp.data)
+        assert len(body) == 0
+
+    #TODO: more tests

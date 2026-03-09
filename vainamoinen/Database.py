@@ -228,12 +228,21 @@ class Job(db.Model):
         return schema
 
     @classmethod
-    def query_all(cls):
+    def query_all(cls, filter_name=None):
         '''
-        Get all jobs from database
+        Get all jobs from database,
+        if filter_name is set to a username, gets all user's jobs.
+
+        Parameters:
+            filter_name - username to filter with
         '''
         job_list = []
-        jobs = cls.query.all()
+        query = cls.query
+
+        if filter_name:
+            query = query.filter_by(username=filter_name)
+
+        jobs = query.all()
         for job in jobs:
             job_list.append(job.serialize())
         return job_list
