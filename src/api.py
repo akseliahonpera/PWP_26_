@@ -99,8 +99,10 @@ class UserCollection(Resource):
 #implement these
 class JobCollection(Resource):
 
-    def get(self, jobs):
+    def get(self):
         jobs = Database.query_job_all()
+        if jobs is None:
+            return "No jobs"
         return jobs
 
 
@@ -189,7 +191,7 @@ class TimeTableItem(Resource):
 class JobConverter(BaseConverter):
 
     def to_python(self, job_name): # type: ignore #id?
-        job = Database.query_job({"job_name":job_name})
+        job = Database.query_job_object({"job_name":job_name})
         if job is None:
             raise NotFound
         return job
@@ -201,15 +203,14 @@ class JobConverter(BaseConverter):
 class UserConverter(BaseConverter):
 
     def to_python(self, user_name): # type: ignore #id?
-        print(user_name)
-        user=Database.query_user({"username":user_name})
+        user=Database.query_user_object({"username":user_name})
         if user is None:
             raise NotFound
         return user
 
     def to_url(self, user): # type: ignore
         print(str(user))
-        return Database.User.serialize(user)["username"]
+        return user.username
 
 """##implement this
 class TimeTableConverter(BaseConverter):

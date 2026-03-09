@@ -32,7 +32,7 @@ class User(db.Model):
     job = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
     def serialize(self, include_jobs=False):
-        user = {"id": self.id, "username": self.username}
+        user = {}
         user["email"]=self.email
         user["address"]=self.address
         user["phone_number"]=self.phone_number
@@ -99,7 +99,7 @@ class Job(db.Model):
     timetable = db.relationship("Timetable",cascade="all,delete-orphan", back_populates= "job")
     
     def serialize(self):
-        job = {"id":self.id}
+        job = {}
         job["user_id"]=self.user_id
         job["job_name"]=self.job_name
         job["job_description"]=self.job_description
@@ -214,9 +214,7 @@ class Timetable(db.Model):
 
 
 def init():
-    print("pekka 1 ")
-    insertUser(user_test_packet2)
-    print("pekka 2 ")
+
     instantiateDatabase()
 
 
@@ -312,6 +310,20 @@ def query_user(request_json):
         print("qiuery failed ", e)
         return None
 
+
+def query_user_object(request_json):
+    """Dynamic/Generic query method. 
+    Takes json object/python dict as parameter, which contains the query data for the user.
+        eg. {'id': 4,}
+    Returns results as List[user]
+    """
+    try:
+        return db.session.query(User).filter_by(**request_json).first()
+
+    except Exception as e:
+        print("qiuery failed ", e)
+        return None
+
 ##JOB RELATED    
 def query_job_all():
     """Query all jobs currently, Returns list[dict] of jobs"""
@@ -340,6 +352,16 @@ def query_job(request_json):
             result_dict_list.append(Job.serialize(i))
         #print(querything)
         return result_dict_list
+
+    except Exception as e:
+        print("query failed ", e)
+        return None
+    
+def query_job_object(request_json):
+    """takes dictionary as parameter, builds query based on that"""
+    print("Try job querying.")
+    try:
+        return db.session.query(Job).filter_by(**request_json).first()
 
     except Exception as e:
         print("query failed ", e)
