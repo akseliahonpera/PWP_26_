@@ -69,16 +69,10 @@ class UserItem(Resource):
         return Response(status=400)
 
 class UserCollection(Resource):
-    print("in usercollection")
     def get(self):
-        print("\nin usercollection get")
         users = Database.query_user_all()
         if users is None:
             return "no users"
-        ret_viest = ""
-        for user in users:
-            ret_viest=ret_viest+str(user)
-            return ret_viest
         return users
 
     def post(self):
