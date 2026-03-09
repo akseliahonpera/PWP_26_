@@ -1,10 +1,8 @@
 import datetime
-from flask import jsonify
-from flask_sqlalchemy import SQLAlchemy
-import config
+from src import config
 from sqlalchemy_utils import database_exists
 import random 
-from instance_reference import db
+from src.instance_reference import db
 
 ###############################################################
 ######### Database global for module use ######################
@@ -20,7 +18,7 @@ print("db module initialization")
 
 
 class User(db.Model):
-
+    """User model for storing user profiles"""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(32), unique= True, nullable=False) ##set unique to false to test
     password= db.Column(db.String(255), nullable=False)
@@ -86,7 +84,7 @@ class User(db.Model):
         return schema
 
 class Job(db.Model):
-  
+    """Job model for stroing jobs models"""
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey(User.id, ondelete="CASCADE"),  nullable=False)
     job_name = db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
@@ -160,7 +158,7 @@ class Job(db.Model):
 
     
 class Timetable(db.Model):
-
+    """Timetable model for storing timetable models"""
     id = db.Column(db.Integer, primary_key=True)
     job_id = db.Column(db.Integer, db.ForeignKey(Job.id, ondelete="CASCADE"),  nullable=False) # type: ignore
     title= db.Column(db.String(63), nullable=False)####lisätty kenttä resursseja varten
@@ -313,7 +311,8 @@ def query_user(request_json):
 
 def query_user_object(request_json):
     """Dynamic/Generic query method. 
-    Takes json object/python dict as parameter, which contains the query data for the user.
+    Takes json object/python dict as parameter, 
+    which contains the query data for the user.
         eg. {'id': 4,}
     Returns results as List[user]
     """
@@ -447,7 +446,8 @@ def delete_job_by_id(job_id):
 def update_user(user, request_json):
     """ 
         Make sure only authorized users can access this per user!! 
-        Gets update target user object and the update data as json dict, locates user and makes changes according to the new packet,shitty
+        Gets update target user object and the update data as json dict, 
+        locates user and makes changes according to the new packet,shitty
     """
     try:
         """If user is none then create new. Otherwise update."""

@@ -1,11 +1,8 @@
 import os
-from flask_caching import Cache
-from flask_restful import Api
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-import config
+from . import config
 
-from instance_reference import db,api,cache ##chatgpt
+from .instance_reference import db,api,cache ##chatgpt
 
 app = Flask(__name__)
 app.config["CACHE_TYPE"] = "FileSystemCache"
@@ -20,13 +17,13 @@ cache.init_app(app)
 
 
 with app.app_context():
-    import api as apimodule
+    from . import api as apimodule
     apimodule.initialize_converters(app)
 api.init_app(app)
 
 
 with app.app_context():
-    from db_package import Database
+    from .db_package import Database
     Database.instantiateDatabase()
 
 

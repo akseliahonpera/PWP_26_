@@ -1,40 +1,22 @@
-from datetime import datetime
-from typing import Any
-from flask import Flask, Response, request
+from flask import  Response, request
 from flask_restful import Resource
-from flask_sqlalchemy import SQLAlchemy
-from jsonschema import validate, ValidationError, FormatChecker
+from jsonschema import validate, ValidationError
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.engine import Engine
-from sqlalchemy import event
 from werkzeug.exceptions import BadRequest, Conflict, NotFound, UnsupportedMediaType
 from werkzeug.routing import BaseConverter
-from db_package import Database
-from instance_reference import api
-
-
-##?? maybe execudet after database initiation??
-print("api initialization")
-
-"""
-@event.listens_for(Engine, "connect")
-def set_mysql_pragma(dbapi_connection, connection_record):
-    cursor = dbapi_connection.cursor()
-    cursor.execute("PRAGMA foreign_keys=ON")
-    cursor.close()
-"""
+from .db_package import Database
+from .instance_reference import api
 
 ##user resources
 
 class UserItem(Resource):
-    
     def get(self, user):
         return Database.User.serialize(user)
 
     def put(self, user):
         if not request.json:
             raise UnsupportedMediaType
-        try: 
+        try:
             validate(request.json, Database.User.json_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
@@ -49,7 +31,7 @@ class UserItem(Resource):
     def post(self, user):
         if not request.json:
             raise UnsupportedMediaType
-        try: 
+        try:
             validate(request.json, Database.User.json_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
@@ -78,7 +60,7 @@ class UserCollection(Resource):
     def post(self):
         if not request.json:
             raise UnsupportedMediaType
-        try: 
+        try:
             validate(request.json, Database.User.json_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
@@ -113,7 +95,6 @@ class JobCollection(Resource):
             validate(request.json, Database.Job.json_schema())
         except ValidationError as e:
             raise BadRequest(description=str(e))
-        
         job = Database.Job()
         job.deserialize(request.json)
         try:
@@ -124,7 +105,6 @@ class JobCollection(Resource):
                 description="joku vittuilee jobcollection postissa"
             )
         return Response(status=201, headers={"Location":api.url_for(JobItem, job=job)})
-        
 
 
 
@@ -197,7 +177,7 @@ class JobConverter(BaseConverter):
         return job
     
     def to_url(self, job): # type: ignore
-        return Database.Job.serialize(job)["job_name"]
+        return job.job_name
 
 
 class UserConverter(BaseConverter):
