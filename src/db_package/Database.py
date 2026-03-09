@@ -214,6 +214,9 @@ class Timetable(db.Model):
 
 
 def init():
+    print("pekka 1 ")
+    insertUser(user_test_packet2)
+    print("pekka 2 ")
     instantiateDatabase()
 
 
@@ -467,6 +470,14 @@ def update_job(job, request_json):
 ###chatGPT
 user_test_packet = {
     "username": "un",
+    "password": "securepassword123",  # hash this later if you haven't yet
+    "email": "testuser@example.com",
+    "address": "123 Main Street, Springfield",
+    "phone_number": "555-123-4567",
+    "description": "Test user account for database insertion"
+}
+user_test_packet2 = {
+    "username": "pekka",
     "password": "securepassword123",  # hash this later if you haven't yet
     "email": "testuser@example.com",
     "address": "123 Main Street, Springfield",

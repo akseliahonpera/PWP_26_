@@ -12,7 +12,6 @@ from werkzeug.routing import BaseConverter
 from db_package import Database
 from instance_reference import api
 
-from flask import current_app as app
 
 ##?? maybe execudet after database initiation??
 print("api initialization")
@@ -180,7 +179,7 @@ class TimeTableItem(Resource):
             raise BadRequest(description=str(e))
         
         try:
-            Database.insertTimetable(timetable)
+            Database.insertTimetable(timetable) # type: ignore
         except IntegrityError:
             raise Conflict(
                 description="something shitty happened in timetable post"
@@ -208,30 +207,31 @@ class JobConverter(BaseConverter):
 class UserConverter(BaseConverter):
 
     def to_python(self, user_name): # type: ignore #id?
+        print(user_name)
         user=Database.query_user({"username":user_name})
         if user is None:
             raise NotFound
         return user
 
     def to_url(self, user): # type: ignore
+        print(str(user))
         return Database.User.serialize(user)["username"]
 
-##implement this
+"""##implement this
 class TimeTableConverter(BaseConverter):
     def to_python(self, timetable_name): # type: ignore
         pass
     
     def to_url(self, timetable): # type: ignore
         return Database.Timetable.serialize(timetable)["title"]
+"""
 
 
-
-
-
-app.url_map.converters["job"] = JobConverter
-app.url_map.converters["user"] = UserConverter
-#app.url_map.converters["timetable"] = TimeTableConverter
-#tänne seuraavat
+def initialize_converters(app):
+    app.url_map.converters["job"] = JobConverter
+    app.url_map.converters["user"] = UserConverter
+    #app.url_map.converters["timetable"] = TimeTableConverter
+    #tänne seuraavat
 
 api.add_resource(JobCollection, "/api/jobs")
 api.add_resource(JobItem, "/api/jobs/<job:job>")
@@ -239,7 +239,7 @@ api.add_resource(UserCollection, "/api/users")
 api.add_resource(UserItem, "/api/users/<user:user>")
 
 
-
+"""
 api.add_resource(TimeTableItem, "/api/jobs/<job:job>/timetable/<timetable:timetable>")
-
+"""
 print("api initialization end")

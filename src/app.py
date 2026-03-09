@@ -15,11 +15,14 @@ app.config["SQLALCHEMY_DATABASE_URI"]= f'mysql+pymysql://{config.MYSQL_USER}:{co
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False    
 
 db.init_app(app)
-api.init_app(app)
+
 cache.init_app(app)
 
+
 with app.app_context():
-    import api
+    import api as apimodule
+    apimodule.initialize_converters(app)
+api.init_app(app)
 
 
 with app.app_context():
@@ -27,11 +30,12 @@ with app.app_context():
     Database.instantiateDatabase()
 
 
-
+print(app.url_map)
 
 def main():
     print("Main")
     print(app.config["SQLALCHEMY_DATABASE_URI"])
+    app.run(debug=True)
 
 ##For testing the database functions
 
