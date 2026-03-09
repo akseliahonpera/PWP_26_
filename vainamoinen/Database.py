@@ -2,7 +2,7 @@
 Database models and functions
 '''
 
-import datetime
+from datetime import datetime
 import random
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
@@ -22,7 +22,63 @@ def set_mysql_pragma(dbapi_connection, _):
 ###############################################################
 
 
-class User(db.Model):
+class GenericDatabaseModel(db.Model):
+    '''
+    Generic database model, you can make subclasses from this
+    Subclasses inherit the database methods.
+    '''
+    __abstract__ = True
+
+    @classmethod
+    def query_all(cls, _filter_=None):
+        '''
+        Get all objects T from database,
+        if _filter_ is set, gets all filtered objects.
+
+        Parameters:
+            _filter_ - for example a username, in format; {"username": "test-user-1"}
+        '''
+        obj_list = []
+        query = cls.query
+
+        if _filter_:
+            print(_filter_)
+            query = query.filter_by(**_filter_)
+
+        objects = query.all()
+        for obj in objects:
+            obj_list.append(obj.serialize())
+        return obj_list
+
+    @classmethod
+    def insert(cls, request_json):
+        '''
+        Insert a new object T into database with request_json
+        '''
+        obj = cls()
+        obj.deserialize(request_json)
+        db.session.add(obj)
+        db.session.commit()
+        return obj
+
+    def update(self, request_json):
+        '''
+        Update an object T in database with request_json
+        '''
+        self.deserialize(request_json)
+        db.session.add(self)
+        db.session.commit()
+        return self
+
+    def delete(self):
+        '''
+        Delete an object T from database
+        '''
+        db.session.delete(self)
+        db.session.commit()
+
+
+class User(GenericDatabaseModel):
     '''
     User database model
     '''
@@ -34,7 +90,7 @@ class User(db.Model):
     address = db.Column(db.String(63), nullable=False)
     phone_number = db.Column(db.String(31), nullable=False)
     description = db.Column(db.Text(255), nullable=False)
-    created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.now, nullable=False)
     job = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
 
     def serialize(self, include_jobs=False):
@@ -72,80 +128,21 @@ class User(db.Model):
         '''
         TODO: doc-string
         '''
-        schema = {
-            "type": "object",
+        schema = {"type": "object",
             "required": ["username", "password","email","address","phone_number","description"]
         }
         props = schema["properties"] = {}
-        props["username"] = {
-            "description": "Users unique username",
-            "type": "string"
-        }
-        props["password"] = {
-            "description": "users password, to be hashed by hashing and salting algo",
-            "type": "string"
-        }
-        props["email"] = {
-            "description": "users unique email",
-            "type": "string"
-        }
-        props["address"] = {
-            "description": "users address",
-            "type": "string"
-        }
-        props["phone_number"] = {
-            "description": "users phonenumber",
-            "type": "string"
-        }
-        props["description"] = {
-            "description": "users description, bio",
-            "type": "string"
-        }
+        props["username"] = {"description": "Users unique username", "type": "string"}
+        props["password"] = {"description": "users pswd, to be hashed and salted","type": "string"}
+        props["email"] =    {"description": "users unique email", "type": "string"}
+        props["address"] =  {"description": "users address", "type": "string"}
+        props["phone_number"] = {"description": "users phonenumber", "type": "string"}
+        props["description"] =  {"description": "users description, bio", "type": "string"}
         return schema
 
-    @classmethod
-    def query_all(cls):
-        '''
-        Get all users from database
-        '''
-        user_list = []
-        users = cls.query.all()
-        for user in users:
-            user_list.append(user.serialize())
-        return user_list
-
-    @classmethod
-    def insert(cls, request_json):
-        '''
-        Insert a new user into database with request_json
-        '''
-        user = cls()
-        user.deserialize(request_json)
-        db.session.add(user)
-        db.session.commit()
-        return user
-
-    def update(self, request_json):
-        '''
-        Update a user in database with request_json
-        '''
-        self.deserialize(request_json)
-        db.session.add(self)
-        db.session.commit()
-        return self
-
-    def delete(self):
-        '''
-        Delete a user from database
-        '''
-        db.session.delete(self)
-        db.session.commit()
 
 
-
-
-
-class Job(db.Model):
+class Job(GenericDatabaseModel):
     '''
     Job database model
     '''
@@ -155,7 +152,7 @@ class Job(db.Model):
     job_name = db.Column(db.String(63),unique=True, nullable=False)#lisätty kenttä resursseja varte
     job_description = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(63),nullable=False)
-    created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
     user = db.relationship("User",  back_populates = "job")###relation
@@ -193,163 +190,76 @@ class Job(db.Model):
         '''
         TODO: doc-string
         '''
-        schema = {
-            "type": "object",
+        schema = {"type": "object",
             "required":[
                 "username","job_name","job_description",
                 "location","opening_hours","category"
             ]
         }
         props = schema["properties"] = {}
-        props["username"] = {
-            "description": "User's name",
-            "type": "string"
-        }
-        props["job_name"] = {
-            "description": "Jobs unique name",
-            "type": "string"
-        }
-        props["job_description"] = {
-            "description": "jobs description",
-            "type": "string"
-        }
-        props["location"] = {
-            "description": "jobs location",
-            "type": "string"
-        }
-        props["opening_hours"] = {
-            "description": "opening_hours",
-            "type": "string"
-        }
-        props["category"] = {
-            "description": "category",
-            "type": "string"
-        }
+        props["username"] =         {"description": "User's name", "type": "string"}
+        props["job_name"] =         {"description": "Jobs unique name", "type": "string"}
+        props["job_description"] =  {"description": "jobs description", "type": "string"}
+        props["location"] =         {"description": "jobs location", "type": "string"}
+        props["opening_hours"] =    {"description": "opening_hours", "type": "string"}
+        props["category"] =         {"description": "category", "type": "string"}
         return schema
 
-    @classmethod
-    def query_all(cls, filter_name=None):
-        '''
-        Get all jobs from database,
-        if filter_name is set to a username, gets all user's jobs.
-
-        Parameters:
-            filter_name - username to filter with
-        '''
-        job_list = []
-        query = cls.query
-
-        if filter_name:
-            query = query.filter_by(username=filter_name)
-
-        jobs = query.all()
-        for job in jobs:
-            job_list.append(job.serialize())
-        return job_list
-
-    @classmethod
-    def insert(cls, request_json):
-        '''
-        Insert a new job into database with request_json
-        '''
-        job = cls()
-        job.deserialize(request_json)
-        db.session.add(job)
-        db.session.commit()
-        return job
-
-    def update(self, request_json):
-        '''
-        Update a job in database with request_json
-        '''
-        self.deserialize(request_json)
-        db.session.add(self)
-        db.session.commit()
-        return self
-
-    def delete(self):
-        '''
-        Delete a job from database
-        '''
-        db.session.delete(self)
-        db.session.commit()
 
 
-class Timetable(db.Model):
+class Timetable(GenericDatabaseModel):
     '''
     Timetable database model
     '''
     id = db.Column(db.Integer, primary_key=True)
-    job_id = db.Column(db.Integer, db.ForeignKey(Job.id,ondelete="CASCADE"),nullable=False)
-    title= db.Column(db.String(63), nullable=False)####lisätty kenttä resursseja varten
+    job_name = db.Column(db.String(63), db.ForeignKey(Job.job_name,ondelete="CASCADE"),nullable=False)
+    title= db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
     start_time = db.Column(db.DateTime, nullable=True)##unix tms
     end_time = db.Column(db.DateTime, nullable=True)##unix tms
     is_booked = db.Column(db.Boolean,nullable=False)
-    created = db.Column(db.DateTime, default=datetime.datetime.now, nullable=False)
+    created = db.Column(db.DateTime, default=datetime.now, nullable=False)
     job = db.relationship("Job",  back_populates = "timetable")###relation
-
 
     def serialize(self):
         '''
         TODO: doc-string
         '''
-        timetable = {"id":self.id}
-        timetable["title"]=self.title
-        timetable["start_time"]=self.start_time.isoformat()
-        timetable["end_time"]=self.end_time.isoformat()
-        timetable["is_booked"]=self.is_booked
-        timetable["created"]=self.created.isoformat()
-        return timetable
+        return {
+            "id": self.id,
+            "job_name": self.job_name,
+            "title": self.title,
+            "start_time": self.start_time.isoformat() if self.start_time else None,
+            "end_time": self.end_time.isoformat() if self.end_time else None,
+            "is_booked": self.is_booked,
+            "created": self.created.isoformat()
+        }
 
     def deserialize(self, timetable):
         '''
-        TODO: doc-string
+        Start and end times are optional, both are not necessary (starting from time ->>)
         '''
+        self.job_name = timetable["job_name"]
         self.title  = timetable["title"]
-        self.start_time = timetable["start_time"]
-        self.end_time = timetable["end_time"]
         self.is_booked = timetable["is_booked"]
-        self.created = timetable["created"]
+
+        self.start_time = datetime.fromisoformat(timetable["start_time"]) if timetable.get("start_time") else None
+        self.end_time = datetime.fromisoformat(timetable["end_time"]) if timetable.get("end_time") else None
+
 
     @staticmethod
     def json_schema():
         '''
         TODO: doc-string
         '''
-        schema = {
-            "type": "object",
-            "required": ["title", "start_time","end_time","is_booked"]
+        schema = {"type": "object",
+            "required": ["title","is_booked"]
         }
         props = schema["properties"] = {}
-        props["title"] = {
-            "description": "tt entry title",
-            "type": "string"
-        }
-        props["start_time"] = {
-            "description": "start time",
-            "type": "ISO_datetime"
-        }
-        props["end_time"] = {
-            "description": "end time ",
-            "type": "ISO_datetime"
-        }
-        props["is_booked"] = {
-            "description": "resrevation status",
-            "type": "boolean"
-        }
+        props["title"] =        {"description": "tt entry title","type": "string"}
+        props["start_time"] =   {"description": "start time", "type": "string", "format": "date-time"}
+        props["end_time"] =     {"description": "end time ", "type": "string", "format": "date-time"}
+        props["is_booked"] =    {"description": "resrevation status","type": "boolean"}
         return schema
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 ###############################################################
@@ -359,7 +269,6 @@ class Timetable(db.Model):
 def init_db():
     ''' Initialize database '''
     db.create_all()
-
 
 
 
@@ -407,7 +316,7 @@ def populate_database():
     jobdata= job_test_packet
 
     for _ in range(userscount,userscount+samplesize):
-        userdata["username"] = running_number_user+f'{datetime.datetime.now()}'
+        userdata["username"] = running_number_user+f'{datetime.now()}'
         print(" USERNAMES::"+userdata["username"])
         User.insert(userdata)
 
@@ -419,7 +328,7 @@ def populate_database():
             random_user= random.randrange(1,len(users))
             print(random_user)
             jobdata["user_id"]= random_user
-            jobdata["job_name"] = "j_name:"+f'{datetime.datetime.now()}'
+            jobdata["job_name"] = "j_name:"+f'{datetime.now()}'
             Job.insert(jobdata)
 
 def main():

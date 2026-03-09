@@ -87,6 +87,6 @@ class UserItemsJobCollection(Resource):
         '''
         Get user's jobs
         '''
-        return Job.query_all(filter_name=user.username)
+        return Job.query_all(_filter_={"username": user.username})
 
     # get probably enough

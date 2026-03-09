@@ -7,7 +7,7 @@ from flask_restful import Api
 
 from .resources.user import UserCollection, UserItem
 from .resources.job import JobCollection, JobItem, UserItemsJobCollection
-#from .resources.timetable import TimeTableCollection, TimeTableItem
+from .resources.timetable import TimeTableCollection, TimeTableItem
 
 api_bp = Blueprint("api", __name__, url_prefix="/api")
 
@@ -18,6 +18,5 @@ api.add_resource(JobItem,               "/jobs/<job:job>")
 api.add_resource(UserCollection,        "/users")
 api.add_resource(UserItem,              "/users/<user:user>")
 api.add_resource(UserItemsJobCollection,"/users/<user:user>/jobs")
-
-#api.add_resource(TimeTableItem, "api/jobs/<JobItem>/TimeTable/<TimeTableItem>")
-#api.add_resource(TimeTableCollection, "api/jobs/<JobItem>/TimeTable")
+api.add_resource(TimeTableCollection,   "/jobs/<job:job>/timetables")
+api.add_resource(TimeTableItem,         "/jobs/<job:job>/timetables/<timetable:timetable>")

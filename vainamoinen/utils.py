@@ -5,7 +5,7 @@ Converters and stuff
 from werkzeug.exceptions import NotFound#, Forbidden
 from werkzeug.routing import BaseConverter
 
-from .database import Job, User#, Timetable
+from .database import Job, User, Timetable
 
 class JobConverter(BaseConverter):
     '''
@@ -53,12 +53,18 @@ class TimeTableConverter(BaseConverter):
     '''
     TODO: doc-string
     '''
+
     def to_python(self, value):
         '''
         TODO: doc-string
         '''
+        db_timetable = Timetable.query.filter_by(title=value).first()
+        if db_timetable is None:
+            raise NotFound
+        return db_timetable
 
     def to_url(self, value):
         '''
         TODO: doc-string
         '''
+        return value.title

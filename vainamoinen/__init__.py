@@ -48,11 +48,11 @@ def create_app(test_config=None):
 
 
     from . import api
-    from .utils import UserConverter, JobConverter#, TimeTableConverter
+    from .utils import UserConverter, JobConverter, TimeTableConverter
 
     app.url_map.converters["user"] = UserConverter
     app.url_map.converters["job"] = JobConverter
-    #app.url_map.converters["timetable"] = TimeTableConverter
+    app.url_map.converters["timetable"] = TimeTableConverter
 
     app.register_blueprint(api.api_bp)
 
