@@ -5,10 +5,13 @@ Database models and functions
 from datetime import datetime
 import random
 import uuid
+import click
 from sqlalchemy.engine import Engine
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import event
+from flask.cli import with_appcontext
 
-from . import db
+db = SQLAlchemy()
 
 @event.listens_for(Engine, "connect")
 def set_mysql_pragma(dbapi_connection, _):
@@ -277,6 +280,11 @@ def init_db():
         populate_database()
 
 
+@click.command("init-db")
+@with_appcontext
+def init_db_command():
+    '''Cli callable function to initialize the database'''
+    db.create_all()
 
 ###############################################################
 ######### Testing stuff      ##################################
