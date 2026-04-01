@@ -4,6 +4,7 @@ Database models and functions
 
 from datetime import datetime
 import random
+import uuid
 from sqlalchemy.engine import Engine
 from sqlalchemy import event
 
@@ -270,6 +271,11 @@ def init_db():
     ''' Initialize database '''
     db.create_all()
 
+    # Database population based on if any users exist
+    is_empty = db.session.query(User.id).first() is None
+    if is_empty:
+        populate_database()
+
 
 
 ###############################################################
@@ -311,25 +317,31 @@ def populate_database():
     else:
         userscount = len(users)
     samplesize = 50
-    userdata= user_test_packet
-    running_number_user = userdata["username"]
-    jobdata= job_test_packet
 
-    for _ in range(userscount,userscount+samplesize):
-        userdata["username"] = running_number_user+f'{datetime.now()}'
-        print(" USERNAMES::"+userdata["username"])
-        User.insert(userdata)
+    for i in range(samplesize):
+        new_user_data = user_test_packet.copy()
+        
+        unique_suffix = str(uuid.uuid4())[:8]
+        new_user_data["username"] = f"user_{unique_suffix}_{i}"
+        new_user_data["email"] = f"email_{unique_suffix}@example.com"
+        print(" USERNAMES::"+new_user_data["username"])
+        User.insert(new_user_data)
 
-    users = User.query_all()
-    if users is None:
-        print("No users available, aborting job creation")
-    else:
-        for _ in range(samplesize-25):
-            random_user= random.randrange(1,len(users))
-            print(random_user)
-            jobdata["user_id"]= random_user
-            jobdata["job_name"] = "j_name:"+f'{datetime.now()}'
-            Job.insert(jobdata)
+    updated_users = User.query_all()
+    if updated_users is None:
+        print("No users available, aborting job creation. User creation likely failed")
+
+    for i in range(samplesize - 25):
+        new_job_data = job_test_packet.copy()
+        
+        random_user = random.choice(updated_users)
+        
+        new_job_data["username"] = random_user["username"]
+        
+        unique_id = str(uuid.uuid4())[:8]
+        new_job_data["job_name"] = f"Job_{unique_id}_{i}"
+        
+        Job.insert(new_job_data)
 
 def main():
     """test for populating the database by running this module dircetly. """
