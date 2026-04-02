@@ -3,7 +3,9 @@ Database models and functions
 '''
 
 from datetime import datetime
+import hashlib
 import random
+import secrets
 import uuid
 import click
 from sqlalchemy.engine import Engine
@@ -34,13 +36,14 @@ class GenericDatabaseModel(db.Model):
     __abstract__ = True
 
     @classmethod
-    def query_all(cls, _filter_=None):
+    def query_all(cls, _filter_=None, public=False, include_jobs=False):
         '''
         Get all objects T from database,
         if _filter_ is set, gets all filtered objects.
 
         Parameters:
             _filter_ - for example a username, in format; {"username": "test-user-1"}
+        Note: only set public to True if model has a public serializer
         '''
         obj_list = []
         query = cls.query
@@ -50,9 +53,25 @@ class GenericDatabaseModel(db.Model):
             query = query.filter_by(**_filter_)
 
         objects = query.all()
+        if public and include_jobs:
+            for obj in objects:
+                obj_list.append(obj.serialize_public(include_jobs))
+            return obj_list
+        
+        if include_jobs:
+            for obj in objects:
+                obj_list.append(obj.serialize(include_jobs))
+            return obj_list
+        
+        if public:
+            for obj in objects:
+                obj_list.append(obj.serialize_public())
+            return obj_list
+            
         for obj in objects:
             obj_list.append(obj.serialize())
         return obj_list
+    
 
     @classmethod
     def insert(cls, request_json):
@@ -96,19 +115,39 @@ class User(GenericDatabaseModel):
     description = db.Column(db.Text(255), nullable=False)
     created = db.Column(db.DateTime, default=datetime.now, nullable=False)
     job = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
+    api_key = db.relationship("ApiKey", back_populates="user", uselist=False, cascade="all, delete-orphan")
 
     def serialize(self, include_jobs=False):
         '''
-        TODO: doc-string
+        Serializes all data, including sensitive information.
+        ONLY TO BE USED WITH USER OR ADMIN AUTHENTICATION
         '''
         user = {
             "id": self.id,
             "username": self.username,
+            "password": self.password,
             "email": self.email,
             "address": self.address,
             "phone_number": self.phone_number,
             "description": self.description,
             "created": self.created.isoformat()
+        }
+        if include_jobs:
+            user["jobs"] = []
+            for single_job in self.job: # type: ignore
+                user["jobs"].append(single_job.serialize())
+        return user
+    
+    def serialize_public(self, include_jobs=False):
+        '''
+        Omit sensitive user information, intended to be safe and accessible without any authorization
+        # TODO: Do we include address and phone number here? omitting them for time being but might be changed in the future
+        '''
+        user = {
+            "username": self.username,
+            "email": self.email,
+            "description": self.description,
+            "created":self.created.isoformat()
         }
         if include_jobs:
             user["jobs"] = []
@@ -175,7 +214,7 @@ class Job(GenericDatabaseModel):
             "created": self.created.isoformat(),
             "opening_hours": self.opening_hours,
             "category": self.category,
-            "user": self.user.serialize()
+            "user": self.user.serialize_public()
         }
 
     def deserialize(self, job):
@@ -264,6 +303,30 @@ class Timetable(GenericDatabaseModel):
         props["end_time"] =     {"description": "end time ", "type": "string", "format": "date-time"}
         props["is_booked"] =    {"description": "resrevation status","type": "boolean"}
         return schema
+    
+class ApiKey(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.String(32), nullable=False, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    admin = db.Column(db.Boolean, default=False)
+
+    user = db.relationship("User", back_populates="api_key", uselist=False)
+
+    @staticmethod
+    def key_hash(key):
+        '''
+        Generates a hash for an API key
+        '''
+        return hashlib.sha256(key.encode()).digest()
+    
+    def __init__(self, key, admin=False, user_id=None, **kwargs):
+        """
+        Constructor so that pylance recognizes these parameters statically
+        """
+        super(ApiKey, self).__init__(**kwargs)
+        self.key = key
+        self.admin = admin
+        self.user_id = user_id
 
 
 ###############################################################
@@ -350,6 +413,24 @@ def populate_database():
         new_job_data["job_name"] = f"Job_{unique_id}_{i}"
         
         Job.insert(new_job_data)
+
+        ###########################################
+        ### FOR DEVELOPMENT AND TESTING ONLY    ###
+        ### REMOVE AND IMPLEMENT ADMIN API KEY  ###
+        ### ELSEWHERE FOR DEPLOYABLE VERSION    ###
+        ###########################################
+        # Add an admin API key if one does not exist, then display it in console
+
+        api_key_exists = db.session.query(ApiKey.id).first() is not None
+        if not api_key_exists:
+            token = secrets.token_urlsafe()
+            db_key = ApiKey(
+                key = ApiKey.key_hash(token),
+                admin = True
+            )
+            db.session.add(db_key)
+            db.session.commit()
+            print("DEVELOPMENT USE ONLY ADMIN API KEY: " + token)
 
 def main():
     """test for populating the database by running this module dircetly. """

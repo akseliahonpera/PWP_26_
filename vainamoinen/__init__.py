@@ -10,9 +10,9 @@ from .database import db
 
 #cache = Cache()
 
-"""
-From course material
-"""
+
+# From course material
+
 
 def create_app(test_config=None):
     '''
@@ -25,7 +25,6 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
 
     from .utils import UserConverter, JobConverter, TimeTableConverter # pylint: disable=import-outside-toplevel, this is also fine here (Probably)
-
 
     app.url_map.converters["user"] = UserConverter
     app.url_map.converters["job"] = JobConverter
