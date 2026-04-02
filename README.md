@@ -22,6 +22,7 @@ flask
 flask_sqlalchemy
 sqlalchemy_utils
 pymysql
+flask-cors
 
 
 Make yourself a config.py file to the src folder.
