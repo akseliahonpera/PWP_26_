@@ -23,6 +23,8 @@ flask_sqlalchemy
 sqlalchemy_utils
 pymysql
 
+When you run the app with "flask --app=vainamoinen --debug run", remember to save the API key from console output!
+To use API key, include it in a header named "Vainamoinen-Api-Key"
 
 Make yourself a config.py file to the src folder.
 
