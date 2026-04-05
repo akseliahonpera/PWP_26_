@@ -1,0 +1,44 @@
+---
+openapi: 3.0.3
+
+info:
+  title: Väinämöinen Employment API
+  version: 0.0.4
+  description: |
+    This is an API project for course 'Programmable Web'. The aim of this API is to offer a
+    simple RESTful-compliant service which provides data about job postings
+
+    #### What the API provides:
+    - Opportunity to fetch data of freelancable jobs
+    - Ability to create your own account and post your own jobs and timetables
+  contact:
+    email: tmarttil22@student.oulu.fi
+    name: Väinämöinen development team
+    
+
+servers:
+- url: \api
+
+components:
+  parameters:
+    user:
+      description: Selected users name
+      in: path
+      name: user
+      required: true
+      schema:
+        type: string
+    job:
+      description: Selected job that belongs to a user
+      in: path
+      name: job
+      required: true
+      schema:
+        type: string
+    timetable:
+      description: Selected timetable that belongs to a job
+      in: path
+      name: timetable
+      required: true
+      schema:
+        type: string

@@ -4,6 +4,7 @@ __init__.py -file
 
 import os
 from flask import Flask
+from flasgger import Swagger
 #from flask_caching import Cache
 from . import api
 from .database import db
@@ -35,6 +36,13 @@ def create_app(test_config=None):
         SQLALCHEMY_DATABASE_URI="sqlite:///" + os.path.join(app.instance_path, "development.db"),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
     )
+
+    app.config["SWAGGER"] = {
+    "title": "Väinämöinen API",
+    "openapi": "3.0.4",
+    "uiversion": 3,
+    }
+    swagger = Swagger(app, template_file="doc/vainamoinen.yml")
 
     app.register_blueprint(api.api_bp)
 

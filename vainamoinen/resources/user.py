@@ -19,6 +19,26 @@ class UserItem(Resource):
     def get(self, user):
         '''
         Get a user, including their private information
+        ---
+        description: Get a user, including their private information
+        parameters:
+        - $ref: '#/components/parameters/user'
+        responses:
+          '200':
+            description: All data of the chosen user
+            content:
+              application/json:
+                example:
+                  id: 1
+                  username: lawnmowerman734
+                  password: securelyHashedPassword
+                  email: lawn@mower.fi
+                  address: yard lane 71
+                  phone_number: 112
+                  description: Yeah I mow lawns very well
+                  created: 2026-04-05 10:24:34.875360
+
+        
         '''
         valid_true_values = ["true", "yes", "1"]
         include_jobs = False

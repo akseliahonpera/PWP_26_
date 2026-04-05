@@ -23,16 +23,21 @@ flask_sqlalchemy
 sqlalchemy_utils
 pymysql
 
-When you run the app with "flask --app=vainamoinen --debug run", remember to save the API key from console output!
+When you run the app, remember to save the API key from console output! 
 To use API key, include it in a header named "Vainamoinen-Api-Key"
 
 Make yourself a config.py file to the src folder.
 
 MYSQL_HOST = "localhost"    //- default
+
 MYSQL_USER = "root"         //- default for MYSQL 8.0 atleast, if you have other profiles then use whatever you like
+
 MYSQL_PASSWORD = ""         //- your mysql server password
+
 MYSQL_PORT = "3306"         //- default MYSQL
+
 MYSQL_DB = ""               //- your desired name for the database as in line 4 <yourdb>
+
 SECRET_KEY = ""             //- irrelevant in this
 
 
