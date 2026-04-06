@@ -42,3 +42,84 @@ components:
       required: true
       schema:
         type: string
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+          description: Username belonging to the user
+        password:
+          type: string
+          description: Secure password for the user
+        email:
+          type: string
+          description: Email address associated with the user
+        address:
+          type: string
+          description: Physical address of the user
+        phone_number:
+          type: string
+          description: Phone number associated with the user
+        description:
+          type: string
+          description: Users own description of themselves and their services
+        created:
+          type: string
+          format: date-time
+          description: Timestamp of the moment the user was created
+    Job:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+          description: The name of the user associated with the job
+        job_name:
+          type: string
+          description: The name of the job
+        job_description:
+          type: string
+          description: The text describing and defining the job in question
+        location:
+          type: string
+          description: Location of the job
+        created:
+          type: string
+          format: date-time
+          description: Timestamp of the moment the job was created
+        opening_hours:
+          type: string
+          description: Information about when the user is available to do the job in question
+        category:
+          type: string
+          description: Taxonomy of types of work the job can be categorized into
+    Timetable:
+      type: object
+      properties:
+        id:
+          type: integer
+        job_name:
+          type: string 
+          description: Job name that the timetable is associated with
+        title:
+          type: string 
+          description: Added field for resources
+        start_time:
+          type: string 
+          format: date-time
+          description: Date-time stamp of the moment the job is available to rent
+        end_time:
+          type: string 
+          format: date-time
+          description: Date-time stamp of the moment the job is no longer available to rent
+        is_booked:
+          type: boolean
+          description: Flag which states wether the job is booked or not
+        created:
+          type: string
+          format: date-time
+          description: Timestamp of the moment the timetable was created

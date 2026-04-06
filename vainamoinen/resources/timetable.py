@@ -11,16 +11,63 @@ from werkzeug.exceptions import BadRequest, Conflict, UnsupportedMediaType
 from vainamoinen.database import Timetable
 
 class TimeTableItem(Resource):
+    '''
+    Resource containing all HTTP methods for singular timetable items
+    '''
 
     def get(self, job, timetable):
         '''
-        TODO: doc-string
+        Get a jobs' timetable
+        ---
+        description: Get timetable associated with a specific job
+        responses:
+          '200':
+            description: All data of the chosen timetable
+            content:
+              application/json:
+                example:
+                  id: 1
+                  job_name: leafblowing
+                  title: TO BE DETERMINED
+                  start_time: 2024-04-05 10:24:34.875360
+                  end_time: 2027-12-31 10:24:34.875360
+                  is_booked: false
+                  created: 2024-04-05 10:24:34.875360
         '''
         return timetable.serialize()
 
     def put(self, job, timetable):
         '''
-        TODO: doc-string
+        Update a jobs' timetable
+        ---
+        description: Replace a timetable with new values
+        parameters:
+        - $ref: '#/components/parameters/timetable'
+        requestBody:
+          description: JSON document that contains new data for the timetable
+          content:
+            application/json:
+              schema:
+                $ref: '#components/schemas/Job'
+              example:
+                  id: 1
+                  job_name: Grass cutting
+                  title: TO BE DETERMINED
+                  start_time: 2024-04-05 10:24:34.875360
+                  end_time: 2029-12-31 10:24:34.875360
+                  is_booked: false
+                  created: 2024-04-05 10:24:34.875360
+        responses:
+          '204':
+            description: Timetable was updated successfully
+          '400':                
+            description: Server couldn't validate the request
+          '409':
+            description: A conflict was raised when attempting to update timetable data
+          '415':
+            description: Provided media was not valid JSON
+          '404':
+            description: Timetable not found
         '''
         if not request.json:
             raise UnsupportedMediaType
@@ -40,7 +87,16 @@ class TimeTableItem(Resource):
 
     def delete(self, job, timetable):
         '''
-        TODO: doc-string
+        Delete a jobs' timetable
+        ---
+        description: Delete a timetable from a job
+        responses:
+          '204':
+            description: timetable deleted successfully
+          '409':
+            description: A conflict was raised when attempting to delete timetable 
+          '404':
+            description: Timetable not found
         '''
         try:
             timetable.delete()
@@ -52,19 +108,39 @@ class TimeTableItem(Resource):
 
 class TimeTableCollection(Resource):
     '''
-    TODO: doc-string
+    Resource containing all HTTP methods for timetable collections
     '''
 
     def get(self, job):
         '''
         Get all timetables of a job
+        ---
+        description: Get all timetables associated with a specific job
+        responses:
+          '200':
+            description: All data of the chosen timetables
+            content:
+              application/json:
+                example:
+                - id: 1
+                  job_name: leafblowing
+                  title: TO BE DETERMINED
+                  start_time: 2024-04-05 10:24:34.875360
+                  end_time: 2025-12-31 10:24:34.875360
+                  is_booked: false
+                  created: 2024-04-05 10:24:34.875360
+                - id: 2 
+                  job_name: leafblowing
+                  title: TO BE DETERMINED
+                  start_time: 2026-01-01 10:24:34.875360
+                  end_time: 2027-12-31 10:24:34.875360
+                  is_booked: false
+                  created: 2024-04-05 10:24:34.875360
         '''
         return Timetable.query_all(_filter_={"job_name": job.job_name})
 
-    def post(self, job):
-        '''
-        TODO: doc-string
-        '''
+    #TODO: Is this needed? no other Collection resource has a post. Commenting out for now
+    """def post(self, job):
         if not request.json:
             raise UnsupportedMediaType
 
@@ -81,4 +157,4 @@ class TimeTableCollection(Resource):
             )
         return Response(
             status=201, headers={"Location":url_for("api.timetableitem", timetable=timetable, job=job)}
-        )
+        )"""
