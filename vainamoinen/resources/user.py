@@ -19,6 +19,7 @@ class UserItem(Resource):
         Get a user, including their private information
         ---
         description: Get a user, including their private information
+        - $ref: '#/components/parameters/user'
         responses:
           '200':
             description: All data of the chosen user
@@ -98,6 +99,8 @@ class UserItem(Resource):
         Delete a user
         ---
         description: Delete a user from the database
+        parameters:
+        - $ref: '#/components/parameters/user'
         responses:
           '204':
             description: User deleted successfully
@@ -120,6 +123,8 @@ class PublicUserItem(Resource):
         Get a user, omitting private information
         ---
         description: Get a user, omitting their private information
+        parameters:
+        - $ref: '#/components/parameters/user'
         responses:
           '200':
             description: Only public data of the chosen user
@@ -151,8 +156,6 @@ class UserCollection(Resource):
         Never allow non-admins this data
         ---
         description: Get all users, including their private information
-        parameters:
-        - $ref: '#/components/parameters/user'
         responses:
           '200':
             description: All data of the chosen user
@@ -191,8 +194,6 @@ class UserCollection(Resource):
         Add a new user
         ---
         description: Add a new user to the database
-        parameters:
-        - $ref: '#/components/parameters/user'
         requestBody:
           description: JSON document that contains new data for the user
           content:

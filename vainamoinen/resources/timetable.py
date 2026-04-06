@@ -20,6 +20,8 @@ class TimeTableItem(Resource):
         Get a jobs' timetable
         ---
         description: Get timetable associated with a specific job
+        - $ref: '#/components/parameters/timetable'
+        - $ref: '#/components/parameters/job'
         responses:
           '200':
             description: All data of the chosen timetable
@@ -43,6 +45,7 @@ class TimeTableItem(Resource):
         description: Replace a timetable with new values
         parameters:
         - $ref: '#/components/parameters/timetable'
+        - $ref: '#/components/parameters/job'
         requestBody:
           description: JSON document that contains new data for the timetable
           content:
@@ -90,6 +93,9 @@ class TimeTableItem(Resource):
         Delete a jobs' timetable
         ---
         description: Delete a timetable from a job
+        parameters:
+        - $ref: '#/components/parameters/job'
+        - $ref: '#/components/parameters/timetable'
         responses:
           '204':
             description: timetable deleted successfully
@@ -116,6 +122,8 @@ class TimeTableCollection(Resource):
         Get all timetables of a job
         ---
         description: Get all timetables associated with a specific job
+        parameters:
+        - $ref: '#/components/parameters/job'
         responses:
           '200':
             description: All data of the chosen timetables

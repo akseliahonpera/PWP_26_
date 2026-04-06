@@ -16,8 +16,8 @@ info:
     name: Väinämöinen development team
     
 
-servers:
-- url: \api
+#servers:
+#- url: \api
 
 components:
   parameters:

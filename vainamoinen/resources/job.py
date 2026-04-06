@@ -18,6 +18,8 @@ class JobItem(Resource):
         Get a job (mene töihin)
         ---
         description: Get all data associated with a singular job
+        parameters:
+        - $ref: '#/components/parameters/job'
         responses:
           '200':
             description: All data of the chosen job 
@@ -90,6 +92,7 @@ class JobItem(Resource):
         Delete a job
         ---
         description: Delete a job from the database
+        - $ref: '#/components/parameters/job'
         responses:
           '204':
             description: job deleted successfully
@@ -114,8 +117,6 @@ class JobCollection(Resource):
         Get all jobs
         ---
         description: Get all jobs
-        parameters:
-        - $ref: '#/components/parameters/job'
         responses:
           '200':
             description: All data of the chosen job
@@ -146,8 +147,6 @@ class JobCollection(Resource):
         Add a new job
         ---
         description: Add a new job to the database
-        parameters:
-        - $ref: '#/components/parameters/job'
         requestBody:
           description: JSON document that contains all data for the job 
           content:
@@ -198,7 +197,7 @@ class UserItemsJobCollection(Resource):
         ---
         description: Get all jobs belonging to a specific user
         parameters:
-        - $ref: '#/components/parameters/job'
+        - $ref: '#/components/parameters/user'
         responses:
           '200':
             description: All data of the chosen job
