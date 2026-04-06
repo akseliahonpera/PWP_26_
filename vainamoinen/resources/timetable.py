@@ -20,6 +20,7 @@ class TimeTableItem(Resource):
         Get a jobs' timetable
         ---
         description: Get timetable associated with a specific job
+        parameters:
         - $ref: '#/components/parameters/timetable'
         - $ref: '#/components/parameters/job'
         responses:

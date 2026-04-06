@@ -19,6 +19,7 @@ class UserItem(Resource):
         Get a user, including their private information
         ---
         description: Get a user, including their private information
+        parameters:
         - $ref: '#/components/parameters/user'
         responses:
           '200':

@@ -92,6 +92,7 @@ class JobItem(Resource):
         Delete a job
         ---
         description: Delete a job from the database
+        parameters:
         - $ref: '#/components/parameters/job'
         responses:
           '204':
