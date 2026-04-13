@@ -14,12 +14,17 @@ info:
   contact:
     email: tmarttil22@student.oulu.fi
     name: Väinämöinen development team
-    
+
 
 #servers:
 #- url: \api
 
 components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Vainamoinen-Api-Key
   parameters:
     user:
       description: Selected users name

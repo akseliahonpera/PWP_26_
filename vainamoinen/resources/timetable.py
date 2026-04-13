@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, Conflict, UnsupportedMediaType
 
 from vainamoinen.database import Timetable
+from vainamoinen.utils import require_user
 
 class TimeTableItem(Resource):
     '''
@@ -44,11 +45,14 @@ class TimeTableItem(Resource):
         '''
         return timetable.serialize()
 
+    @require_user
     def put(self, job, timetable):
         '''
         Update a jobs' timetable
         ---
         description: Replace a timetable with new values
+        security:
+          - ApiKeyAuth: []
         parameters:
         - $ref: '#/components/parameters/timetable'
         - $ref: '#/components/parameters/job'
@@ -94,6 +98,7 @@ class TimeTableItem(Resource):
             )
         return Response(status=204)
 
+    @require_user
     def delete(self, job, timetable):
         '''
         Delete a jobs' timetable
@@ -152,7 +157,7 @@ class TimeTableCollection(Resource):
         '''
         return Timetable.query_all(_filter_={"job_name": job.job_name})
 
-    #TODO: Is this needed? no other Collection resource has a post. Commenting out for now
+    #TODO: Is this needed? no other Collection resource has a post method. Commenting out for now
     """def post(self, job):
         if not request.json:
             raise UnsupportedMediaType

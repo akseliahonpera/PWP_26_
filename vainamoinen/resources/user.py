@@ -19,6 +19,8 @@ class UserItem(Resource):
         Get a user, including their private information
         ---
         description: Get a user, including their private information
+        security:
+          - ApiKeyAuth: []
         parameters:
         - $ref: '#/components/parameters/user'
         responses:
@@ -50,6 +52,8 @@ class UserItem(Resource):
         Update a user
         ---
         description: Replace a user with new values
+        security:
+          - ApiKeyAuth: []
         parameters:
         - $ref: '#/components/parameters/user'
         requestBody:
@@ -100,6 +104,8 @@ class UserItem(Resource):
         Delete a user
         ---
         description: Delete a user from the database
+        security:
+          - ApiKeyAuth: []
         parameters:
         - $ref: '#/components/parameters/user'
         responses:
@@ -157,6 +163,8 @@ class UserCollection(Resource):
         Never allow non-admins this data
         ---
         description: Get all users, including their private information
+        security:
+          - ApiKeyAuth: []
         responses:
           '200':
             description: All data of the chosen user
@@ -212,6 +220,12 @@ class UserCollection(Resource):
         responses:
           '201':
             description: User was created and uploaded successfully
+            headers:
+              Location:
+                description: URL of the newly created job resource
+                schema:
+                  type: string
+                  format: uri
           '400':
             description: Server couldn't validate the request
           '409':

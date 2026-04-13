@@ -9,6 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, Conflict, UnsupportedMediaType
 
 from vainamoinen.database import Job
+from vainamoinen.utils import require_user
 
 
 class JobItem(Resource):
@@ -37,11 +38,14 @@ class JobItem(Resource):
         '''
         return Job.serialize(job)
 
+    @require_user
     def put(self, job):
         '''
         Update a job
         ---
         description: Replace a job with new values
+        security:
+          - ApiKeyAuth: []
         parameters:
         - $ref: '#/components/parameters/job'
         requestBody:
@@ -87,11 +91,14 @@ class JobItem(Resource):
             )
         return Response(status=204)
 
+    @require_user
     def delete(self, job):
         '''
         Delete a job
         ---
         description: Delete a job from the database
+        security:
+          - ApiKeyAuth: []
         parameters:
         - $ref: '#/components/parameters/job'
         responses:
@@ -166,6 +173,12 @@ class JobCollection(Resource):
         responses:
           '201':
             description: Job was created and uploaded successfully
+            headers:
+              Location:
+                description: URL of the newly created job resource
+                schema:
+                  type: string
+                  format: uri
           '400':
             description: Server couldn't validate the request
           '409':
