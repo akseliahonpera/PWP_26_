@@ -20,28 +20,29 @@ class JobConverter(BaseConverter):
 
     def to_python(self, value):
         '''
-        Converts string values to python objects. In this regard it takes in resource name and returns 
+        Converts string values to python objects. 
+        In this regard it takes in resource name and returns job object
         '''
-        db_sensor = Job.query.filter_by(job_name=value).first()
-        if db_sensor is None:
+        db_job = Job.query.filter_by(job_name=value).first()
+        if db_job is None:
             raise NotFound
-        return db_sensor
+        return db_job
 
     def to_url(self, value):
         '''
-        TODO: doc-string
+        Gets name of the job resouce and sets it to the path.
         '''
         return value.job_name
 
 
 class UserConverter(BaseConverter):
     '''
-    TODO: doc-string
+    Converter for user resources.
     '''
 
     def to_python(self, value):
         '''
-        TODO: doc-string
+        Converts user resource name to user object and returns it.
         '''
         db_user = User.query.filter_by(username=value).first()
         if db_user is None:
@@ -50,11 +51,11 @@ class UserConverter(BaseConverter):
 
     def to_url(self, value):
         '''
-        TODO: doc-string
+        Converts user object name to resource name.
         '''
         return value.username
 
-##TODO: implement this
+
 class TimeTableConverter(BaseConverter):
     '''
     Converts timetable objects to string values for 
@@ -63,7 +64,7 @@ class TimeTableConverter(BaseConverter):
 
     def to_python(self, value):
         '''
-        TODO: doc-string
+        Converts timetable resource name to timetable object.
         '''
         db_timetable = Timetable.query.filter_by(title=value).first()
         if db_timetable is None:
@@ -72,7 +73,7 @@ class TimeTableConverter(BaseConverter):
 
     def to_url(self, value):
         '''
-        TODO: doc-string
+        Converts name of the timetable to resource name.
         '''
         return value.title
 

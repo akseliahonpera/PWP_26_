@@ -203,7 +203,7 @@ class Job(GenericDatabaseModel):
 
     def serialize(self):
         '''
-        TODO: doc-string
+         serializes job object
         '''
         return {
             "id": self.id,
@@ -219,7 +219,7 @@ class Job(GenericDatabaseModel):
 
     def deserialize(self, job):
         '''
-        TODO: doc-string
+        de-serializes job object
         '''
         self.username=job["username"]
         self.job_name=job["job_name"]
@@ -265,7 +265,7 @@ class Timetable(GenericDatabaseModel):
 
     def serialize(self):
         '''
-        TODO: doc-string
+        serializes timetable object
         '''
         return {
             "id": self.id,
@@ -305,6 +305,9 @@ class Timetable(GenericDatabaseModel):
         return schema
     
 class ApiKey(db.Model):
+    """
+    Class for apikey handling. 
+    """
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(32), nullable=False, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
