@@ -79,7 +79,7 @@ class GenericDatabaseModel(db.Model):
         Insert a new object T into database with request_json
         '''
         obj = cls()
-        obj.deserialize(request_json)
+        obj.deserialize(request_json) # type: ignore
         db.session.add(obj)
         db.session.commit()
         return obj
@@ -88,7 +88,7 @@ class GenericDatabaseModel(db.Model):
         '''
         Update an object T in database with request_json
         '''
-        self.deserialize(request_json)
+        self.deserialize(request_json) # type: ignore
         db.session.add(self)
         db.session.commit()
         return self

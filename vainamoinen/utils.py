@@ -14,12 +14,13 @@ from .database import ApiKey, Job, User, Timetable
 
 class JobConverter(BaseConverter):
     '''
-    TODO: doc-string
+    Converter for converting job resource values 
+    to string or from string value to said object.
     '''
 
     def to_python(self, value):
         '''
-        TODO: doc-string
+        Converts string values to python objects. In this regard it takes in resource name and returns 
         '''
         db_sensor = Job.query.filter_by(job_name=value).first()
         if db_sensor is None:
@@ -56,7 +57,8 @@ class UserConverter(BaseConverter):
 ##TODO: implement this
 class TimeTableConverter(BaseConverter):
     '''
-    TODO: doc-string
+    Converts timetable objects to string values for 
+    routing purposes and resource values to timetable objects fot fetching
     '''
 
     def to_python(self, value):
