@@ -28,12 +28,17 @@ class TimeTableItem(Resource):
             description: All data of the chosen timetable
             content:
               application/json:
-                example:
-                  id: 1
+                examples:
+                - id: 1
                   job_name: leafblowing
                   title: TO BE DETERMINED
                   start_time: 2024-04-05 10:24:34.875360
                   end_time: 2027-12-31 10:24:34.875360
+                  is_booked: false
+                  created: 2024-04-05 10:24:34.875360
+                - id: 2
+                  job_name: leafblowing
+                  title: TO BE DETERMINED
                   is_booked: false
                   created: 2024-04-05 10:24:34.875360
         '''
@@ -142,7 +147,6 @@ class TimeTableCollection(Resource):
                   job_name: leafblowing
                   title: TO BE DETERMINED
                   start_time: 2026-01-01 10:24:34.875360
-                  end_time: 2027-12-31 10:24:34.875360
                   is_booked: false
                   created: 2024-04-05 10:24:34.875360
         '''
