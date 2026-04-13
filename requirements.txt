@@ -3,3 +3,4 @@ flask
 flask_sqlalchemy
 sqlalchemy_utils
 pymysql
+flasgger
