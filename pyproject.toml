@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vainamoinen"
+version = "0.2.1"
+dependencies = [
+    "flask",
+    "flask-caching",
+    "flask-restful",
+    "flask-sqlalchemy",
+    "jsonschema",
+    "rfc3339-validator",
+    "SQLAlchemy",
+    "gunicorn",
+    "datetime",
+    "sqlalchemy_utils",
+    "pymysql",
+    "flasgger"
+]
