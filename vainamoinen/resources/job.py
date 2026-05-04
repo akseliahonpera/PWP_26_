@@ -74,6 +74,8 @@ class JobItem(Resource):
             description: Provided media was not valid JSON
           '404':
             description: Job not found
+          '403':
+            description: Authentication was not sufficient for this call
         '''
         if not request.json:
             raise UnsupportedMediaType
@@ -108,6 +110,8 @@ class JobItem(Resource):
             description: A conflict was raised when attempting to delete job data
           '404':
             description: Job not found
+          '403':
+            description: Authentication was not sufficient for this call
         '''
         try:
             job.delete()

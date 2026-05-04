@@ -65,4 +65,7 @@ def create_app(test_config=None):
     with app.app_context():
         database.init_db()
 
+    # Uncomment to check db (should be the instance/development.db as for now)
+    #print(app.config["SQLALCHEMY_DATABASE_URI"])
+
     return app

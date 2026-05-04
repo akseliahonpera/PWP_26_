@@ -37,6 +37,11 @@ class UserItem(Resource):
                   phone_number: 112
                   description: Yeah I mow lawns very well
                   created: 2026-04-05 10:24:34.875360
+          '404':
+            description: User not found
+          '403':
+            description: Authentication was not sufficient for this call
+
         '''
         valid_true_values = ["true", "yes", "1"]
         include_jobs = False
@@ -81,6 +86,8 @@ class UserItem(Resource):
             description: Provided media was not valid JSON
           '404':
             description: User not found
+          '403':
+            description: Authentication was not sufficient for this call
         '''
         if not request.json:
             raise UnsupportedMediaType
@@ -115,6 +122,8 @@ class UserItem(Resource):
             description: A conflict was raised when attempting to delete user data
           '404':
             description: User not found
+          '403':
+            description: Authentication was not sufficient for this call
         '''
         try:
             user.delete()
@@ -187,6 +196,8 @@ class UserCollection(Resource):
                   phone_number: 045 678 9012
                   description: leaf hehe
                   created: 2022-07-09 11:13:34.65536
+          '403':
+            description: Authentication was not sufficient for this call
         '''
         valid_true_values = ["true", "yes", "1"]
         include_jobs = False

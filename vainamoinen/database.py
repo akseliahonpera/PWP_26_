@@ -303,7 +303,7 @@ class Timetable(GenericDatabaseModel):
         props["end_time"] =     {"description": "end time ", "type": "string", "format": "date-time"}
         props["is_booked"] =    {"description": "resrevation status","type": "boolean"}
         return schema
-    
+
 class ApiKey(db.Model):
     """
     Class for apikey handling. 

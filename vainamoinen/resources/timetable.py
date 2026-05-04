@@ -81,6 +81,8 @@ class TimeTableItem(Resource):
             description: Provided media was not valid JSON
           '404':
             description: Timetable not found
+          '403':
+            description: Authentication was not sufficient for this call
         '''
         if not request.json:
             raise UnsupportedMediaType
@@ -114,6 +116,8 @@ class TimeTableItem(Resource):
             description: A conflict was raised when attempting to delete timetable 
           '404':
             description: Timetable not found
+          '403':
+            description: Authentication was not sufficient for this call
         '''
         try:
             timetable.delete()
