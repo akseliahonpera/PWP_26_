@@ -23,4 +23,11 @@ def render_user_search(search_query):
 
 def render_all_users():
     st.header("All users")
-    users = client.get_users_public()
+    users = client.get_users_public().json()
+    for user in users:
+        c = st.container()
+        c.write(f"Username: {user["username"]}")
+        c.write(f"Description: {user["description"]}")
+        c.write(f"Email: {user["email"]}")
+        c.write(f"Time of creation: {user["created"]}")
+        st.space("small")
