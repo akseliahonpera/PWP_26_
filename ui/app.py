@@ -1,7 +1,20 @@
-from api_client import APIClient
 import streamlit as st
-# Add render function imports to pages/__init__.py, then import that function here
-from renders import *
+
+###############################################################################################
+### I know this looks cursed BUT this stops Pylint from whining about what would normally
+### be justified. In this repository, the "ui" folder is completely modular and independent
+### from the rest of the code and is always ran with Streamlit. From Streamlits POV,
+### these modules import just fine since ui-folder is root. Pylint rightfully disagrees since
+### the project root is ui's parent, hence the unorthodox error disables.
+### Good way to go about it? Eh probably, I see no downsides since we decided against
+### creating a second repository for the UI.
+###############################################################################################
+from renders.jobs import render_job_search, render_jobs #pylint: disable=import-error
+from renders.main_menu import render_main_menu #pylint: disable=import-error
+from renders.users import render_all_users, render_public_profile, render_user_search #pylint: disable=import-error
+from renders.users import render_owned_profile #pylint: disable=import-error
+
+from api_client import APIClient #pylint: disable=import-error
 
 if "client" not in  st.session_state:
     st.session_state.client = APIClient()

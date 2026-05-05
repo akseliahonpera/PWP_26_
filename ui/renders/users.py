@@ -1,5 +1,12 @@
 import streamlit as st
 
+from api_client import APIClient #pylint: disable=import-error
+
+if "client" not in  st.session_state:
+    st.session_state.client = APIClient()
+
+client = st.session_state.client
+
 def render_public_profile(username):
     st.header(f"{username}'s profile")
 
@@ -15,4 +22,5 @@ def render_user_search(search_query):
     # Show user profiles which were found by the query (or just the exact match)
 
 def render_all_users():
-    st.header("All users here")
+    st.header("All users")
+    users = client.get_users_public()
