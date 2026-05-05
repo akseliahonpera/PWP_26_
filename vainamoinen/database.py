@@ -195,6 +195,8 @@ class Job(GenericDatabaseModel):
     job_name = db.Column(db.String(63),unique=True, nullable=False)#lisätty kenttä resursseja varte
     job_description = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(63),nullable=False)
+    latitude = db.Column(db.String(31), nullable=False)
+    longitude = db.Column(db.String(31), nullable=False)
     created = db.Column(db.DateTime, default=datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
@@ -211,6 +213,8 @@ class Job(GenericDatabaseModel):
             "job_name": self.job_name,
             "job_description": self.job_description,
             "location": self.location,
+            "latitude":self.latitude,
+            "longitude":self.longitude,
             "created": self.created.isoformat(),
             "opening_hours": self.opening_hours,
             "category": self.category,
@@ -225,6 +229,8 @@ class Job(GenericDatabaseModel):
         self.job_name=job["job_name"]
         self.job_description=job["job_description"]
         self.location=job["location"]
+        self.latitude=job["latitude"]
+        self.longitude=job["longitude"]
         self.opening_hours=job["opening_hours"]
         self.category=job["category"]
 
@@ -236,7 +242,7 @@ class Job(GenericDatabaseModel):
         schema = {"type": "object",
             "required":[
                 "username","job_name","job_description",
-                "location","opening_hours","category"
+                "location","latitude","longitude","opening_hours","category"
             ]
         }
         props = schema["properties"] = {}
@@ -244,6 +250,8 @@ class Job(GenericDatabaseModel):
         props["job_name"] =         {"description": "Jobs unique name", "type": "string"}
         props["job_description"] =  {"description": "jobs description", "type": "string"}
         props["location"] =         {"description": "jobs location", "type": "string"}
+        props["latitude"] =         {"description": "jobs latitude", "type": "string"}
+        props["longitude"] =         {"description": "jobs longitude", "type": "string"}
         props["opening_hours"] =    {"description": "opening_hours", "type": "string"}
         props["category"] =         {"description": "category", "type": "string"}
         return schema
@@ -377,6 +385,8 @@ job_test_packet = {
         "is_booked": False
     },
     "location": "Downtown Cafe, Springfield",
+    "latitude": "57.34.54.23.2333",
+    "longitude": "27.36.34.23.1233",
     "opening_hours": "08:00-14:00",
     "category": "Hospitality"
 }
