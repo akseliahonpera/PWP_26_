@@ -162,7 +162,7 @@ class TimeTableCollection(Resource):
         return Timetable.query_all(_filter_={"job_name": job.job_name})
 
     #TODO: Is this needed? no other Collection resource has a post method. Commenting out for now
-    """def post(self, job):
+    def post(self, job):
         if not request.json:
             raise UnsupportedMediaType
 
@@ -179,4 +179,4 @@ class TimeTableCollection(Resource):
             )
         return Response(
             status=201, headers={"Location":url_for("api.timetableitem", timetable=timetable, job=job)}
-        )"""
+        )

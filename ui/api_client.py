@@ -81,7 +81,7 @@ class APIClient:
         API call
         '''
         return requests.put(
-            f"{self.ip}/jobs/{job["job_name"]}",
+            f"{self.ip}/jobs/{job['job_name']}",
             json=job,
             headers=self._headers(),
             timeout=5.0
@@ -126,7 +126,7 @@ class APIClient:
         API call
         '''
         return requests.get(
-            f"{self.ip}/jobs/{job_name}/timetables/{timetable["title"]}",
+            f"{self.ip}/jobs/{job_name}/timetables/{timetable['title']}",
             json=timetable,
             headers=self._headers(),
             timeout=5.0
@@ -183,7 +183,7 @@ class APIClient:
         API call
         '''
         return requests.put(
-            f"{self.ip}/users/{user["user_name"]}",
+            f"{self.ip}/users/{user['user_name']}",
             json=user,
             headers=self._headers(),
             timeout=5.0

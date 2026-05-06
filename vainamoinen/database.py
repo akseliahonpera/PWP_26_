@@ -408,7 +408,7 @@ def populate_database():
         unique_suffix = str(uuid.uuid4())[:8]
         new_user_data["username"] = f"user_{unique_suffix}_{i}"
         new_user_data["email"] = f"email_{unique_suffix}@example.com"
-        print(" USERNAMES::"+new_user_data["username"])
+        #print(" USERNAMES::"+new_user_data["username"])
         User.insert(new_user_data)
 
     updated_users = User.query_all()

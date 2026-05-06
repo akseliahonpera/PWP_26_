@@ -8,6 +8,10 @@ if "client" not in  st.session_state:
 client = st.session_state.client
 
 def render_jobs(category = None):
+    # testing adding a job through a pop up
+    if st.button("Add a new job (temporary test)"):
+        add_job()
+
     if category:
         # Reset category so that next call wont incorrectly include old input
         category = None
@@ -15,11 +19,13 @@ def render_jobs(category = None):
     else:
         st.header("All Jobs")
         jobs = client.get_all_jobs().json()
-        for job in jobs:
-            c = st.container()
-            c.write(f"Username: {job["username"]}")
-            c.write(f"Job name: {job["job_name"]}")
-            c.write(f"Description: {job["job_description"]}")
+        for i, job in enumerate(jobs):
+            c = st.container(border=True)
+            c.write(f"Username: {job['username']}")
+            c.write(f"Job name: {job['job_name']}")
+            c.write(f"Description: {job['job_description']}")
+            if c.button(f"View More", key=i):
+                job_info(job)
             st.space("small")
 
 def render_job_search(search_query):
@@ -28,3 +34,44 @@ def render_job_search(search_query):
 
 def render_job():
     st.header("get all job data and display prettily here")
+
+@st.dialog("About job:")
+def job_info(job):
+    '''
+    A pop up to show more information about the job
+    '''
+    st.write(f"Username: {job['username']}")
+    st.write(f"Job name: {job['job_name']}")
+    st.write(f"Description: {job['job_description']}")
+    st.write(f"Location: {job['location']}")
+    st.write(f"Created: {job['created']}")
+    st.write(f"Opening hours: {job['opening_hours']}")
+    st.write(f"Category: {job['category']}")
+    
+@st.dialog("Add a job:")
+def add_job():
+    '''
+    test
+    '''
+    username = st.text_input("Username", "")
+    job_name = st.text_input("Job Name", "")
+    job_desc = st.text_input("Description", "")
+    latitude = st.text_input("Latitude:", "")
+    longitude = st.text_input("Longitude:", "")
+    location = st.text_input("Location:", "")
+    opening_hours = st.text_input("Opening Hours:", "")
+    category = st.text_input("Category:", "")
+    
+    if st.button("Add"):
+        new_job = {
+            "username": username,
+            "job_name": job_name,
+            "job_description": job_desc,
+            "latitude": latitude,
+            "longitude": longitude,
+            "location": location,
+            "opening_hours": opening_hours,
+            "category": category
+        }
+        response = client.post_job(new_job)
+        st.info(response)

@@ -2,86 +2,8 @@
 Timetable resource tests
 '''
 
-import pytest
+from utils import client, _get_user_json, _get_job_json, _get_timetable_json, _headers
 import json
-from vainamoinen.database import Timetable, User, Job
-from vainamoinen import db, create_app
-from test_user_resource import _get_user_json
-from test_job_resource import _get_job_json
-
-@pytest.fixture
-def client():
-    '''
-    Create a test client for tests
-    '''
-
-    config = {
-        "SQLALCHEMY_DATABASE_URI": "sqlite:///test.db",
-        "TESTING": True,
-        #"CACHE_TYPE": "SimpleCache"
-    }
-
-    app = create_app(config)
-
-    ctx = app.app_context()
-    ctx.push()
-
-    with app.app_context():
-        db.create_all()
-    _populate_db()
-
-    yield app.test_client()
-
-    db.session.rollback()
-    db.drop_all()
-    db.session.remove()
-    ctx.pop()
-
-
-def _populate_db():
-    '''
-    Populate database with a test timetable
-    '''
-    user_json = _get_user_json(1)
-    user = User()
-    user.deserialize(user_json)
-    db.session.add(user)
-
-    job_json = _get_job_json(job_number=1, user_number=1)
-    job = Job()
-    job.deserialize(job_json)
-    db.session.add(job)
-
-    timetable_json = _get_timetable_json(timetable_number=1, job_number=1, user_number=1)
-    timetable = Timetable()
-    timetable.deserialize(timetable_json)
-    db.session.add(timetable)
-
-    timetable_json = _get_timetable_json(timetable_number=2, job_number=1, user_number=1)
-    timetable = Timetable()
-    timetable.deserialize(timetable_json)
-    db.session.add(timetable)
-
-    db.session.commit()
-
-
-def _get_timetable_json(timetable_number, job_number, user_number):
-    '''
-    Creates a valid timetable JSON object to be used for PUT and POST tests.
-    '''
-
-    user = _get_user_json(user_number)
-    job = _get_job_json(job_number=job_number, user_number=user_number)
-
-
-    return {
-        "job_name": "test-job-{}".format(job_number),
-        "title": "test-title-{}".format(timetable_number),
-        "start_time": "2026-03-09T15:00:00",
-        "end_time": "2026-03-09T16:00:00",
-        "is_booked": False
-    }
-
 
 class TestTimeTableCollection:
     RESOURCE_URL = "/api/jobs/test-job-1/timetables"
@@ -90,7 +12,10 @@ class TestTimeTableCollection:
         '''
         Test getting all timetables
         '''
-        resp = client.get(self.RESOURCE_URL)
+        resp = client.get(
+            self.RESOURCE_URL,
+            headers = _headers()
+        )
         assert resp.status_code == 200
         body = json.loads(resp.data)
 
@@ -104,7 +29,11 @@ class TestTimeTableCollection:
         Test posting a new timetable succesfully
         '''
         timetable = _get_timetable_json(timetable_number=3, job_number=1, user_number=1)
-        resp = client.post(self.RESOURCE_URL, json=timetable)
+        resp = client.post(
+            self.RESOURCE_URL, 
+            json=timetable,
+            headers = _headers()
+        )
         assert resp.status_code == 201
 
     def test_post_name_conflict(self, client):
@@ -112,14 +41,22 @@ class TestTimeTableCollection:
         Test posting an existing timetable
         '''
         timetable = _get_timetable_json(timetable_number=1, job_number=1, user_number=1)
-        resp = client.post(self.RESOURCE_URL, json=timetable)
+        resp = client.post(
+            self.RESOURCE_URL, 
+            json=timetable,
+            headers = _headers()
+        )
         assert resp.status_code == 409
 
     def test_post_wrong_mediatype(self, client):
         '''
         Test posting with wrong mediatype
         '''
-        resp = client.post(self.RESOURCE_URL, data="notJSON")
+        resp = client.post(
+            self.RESOURCE_URL, 
+            data="notJSON",
+            headers = _headers(json=False)
+        )
         assert resp.status_code == 415
 
     def test_post_missing_field(self, client):
@@ -128,7 +65,11 @@ class TestTimeTableCollection:
         '''
         timetable = _get_timetable_json(timetable_number=2, job_number=1, user_number=1)
         timetable.pop("is_booked")
-        resp = client.post(self.RESOURCE_URL, json=timetable)
+        resp = client.post(
+            self.RESOURCE_URL, 
+            json=timetable,
+            headers = _headers()
+        )
         assert resp.status_code == 400
 
 
@@ -141,7 +82,10 @@ class TestTimeTableItem:
         '''
         Test getting a specific timetable
         '''
-        resp = client.get(self.RESOURCE_URL)
+        resp = client.get(
+            self.RESOURCE_URL,
+            headers = _headers()
+        )
         assert resp.status_code == 200
         body = json.loads(resp.data)
         assert "title" in body
@@ -151,7 +95,10 @@ class TestTimeTableItem:
         '''
         Test getting a non-existent timetable
         '''
-        resp = client.get(self.INVALID_TIMETABLE_URL)
+        resp = client.get(
+            self.INVALID_TIMETABLE_URL,
+            headers = _headers()
+        )
         assert resp.status_code == 404
 
 
@@ -162,14 +109,22 @@ class TestTimeTableItem:
         '''
         valid = _get_timetable_json(timetable_number=1, job_number=1, user_number=1)
         valid["is_booked"]=True
-        resp = client.put(self.RESOURCE_URL, json=valid)
+        resp = client.put(
+            self.RESOURCE_URL, 
+            json=valid,
+            headers = _headers()
+        )
         assert resp.status_code == 204
 
     def test_put_wrong_mediatype(self, client):
         '''
         Test updating a timetable with wrong mediatype
         '''
-        resp = client.put(self.RESOURCE_URL, data="notJSON")
+        resp = client.put(
+            self.RESOURCE_URL, 
+            data="notJSON",
+            headers = _headers(json=False)
+        )
         assert resp.status_code == 415
 
     def test_put_missing_field(self, client):
@@ -178,19 +133,54 @@ class TestTimeTableItem:
         '''
         not_valid = _get_timetable_json(timetable_number=1, job_number=1, user_number=1)
         not_valid.pop("is_booked")
-        resp = client.put(self.RESOURCE_URL, json=not_valid)
+        resp = client.put(
+            self.RESOURCE_URL, 
+            json=not_valid,
+            headers = _headers()
+        )
         assert resp.status_code == 400
 
     def test_delete(self, client):
         '''
         Test deleting timetable
         '''
-        resp = client.delete(self.RESOURCE_URL)
+        resp = client.delete(
+            self.RESOURCE_URL,
+            headers = _headers()
+        )
         assert resp.status_code == 204
 
     def test_delete_not_found(self, client):
         '''
         Test deleting non-existent timetable
         '''
-        resp = client.delete(self.INVALID_TIMETABLE_URL)
+        resp = client.delete(
+            self.INVALID_TIMETABLE_URL,
+            headers = _headers()
+        )
+        assert resp.status_code == 404
+
+    def test_cascade_delete(self, client):
+        '''
+        Test deleting a job, to see if their timetable is also deleted
+        '''
+        # Check that timetable exists first
+        resp = client.get(
+            "/api/jobs/test-job-1/timetables/test-title-1",
+            headers = _headers()
+        )
+        assert resp.status_code == 200
+
+        # Delete the job that owns the timetable
+        resp = client.delete(
+            "/api/jobs/test-job-1",
+            headers = _headers()
+        )
+        assert resp.status_code == 204
+
+        # Try to get the same timetable after deleting the job
+        resp = client.get(
+            "/api/jobs/test-job-1/timetables/test-title-1",
+            headers = _headers()
+        )
         assert resp.status_code == 404
