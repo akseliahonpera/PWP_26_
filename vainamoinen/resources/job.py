@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, Conflict, UnsupportedMediaType
 
 from vainamoinen.database import Job
-from vainamoinen.utils import require_user
+from vainamoinen.utils import require_admin, require_user
 
 
 class JobItem(Resource):
@@ -38,7 +38,8 @@ class JobItem(Resource):
         '''
         return Job.serialize(job)
 
-    @require_user
+    #Change to require_user when that fiasco code is cleaned
+    @require_admin
     def put(self, job):
         '''
         Update a job
@@ -93,7 +94,8 @@ class JobItem(Resource):
             )
         return Response(status=204)
 
-    @require_user
+    #Change to require_user when that fiasco code is cleaned
+    @require_admin
     def delete(self, job):
         '''
         Delete a job

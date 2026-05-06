@@ -45,7 +45,7 @@ class TimeTableItem(Resource):
         '''
         return timetable.serialize()
 
-    @require_user
+    #@require_user
     def put(self, job, timetable):
         '''
         Update a jobs' timetable
@@ -100,7 +100,7 @@ class TimeTableItem(Resource):
             )
         return Response(status=204)
 
-    @require_user
+    #@require_user
     def delete(self, job, timetable):
         '''
         Delete a jobs' timetable
