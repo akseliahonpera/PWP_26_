@@ -108,4 +108,4 @@ def require_user(func):
             return func(self, user, *args, **kwargs)
         raise Forbidden
     return wrapper
-        
+ 

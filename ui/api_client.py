@@ -23,7 +23,6 @@ class APIClient:
             self.ip = "http://localhost:5000/api"
         else:
             self.ip = ip
- 
 
     def _headers(self):
         return {"Vainamoinen-Api-Key": self.api_key,
