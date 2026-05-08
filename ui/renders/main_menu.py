@@ -23,3 +23,11 @@ def render_main_menu():
         if default_clicked:
             st.write("Defaulting IP to localhost")
             client.set_ip(localhost=True)
+
+    login = st.button("Log in")
+    signup = st.button("Sign up")
+
+    if login:
+        st.session_state.page = "login"
+    if signup:
+        st.session_state.page = "signup"
