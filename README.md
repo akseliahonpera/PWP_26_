@@ -34,7 +34,7 @@ To run the app:
 When you run the app, remember to save the API key from console output! 
 To use API key, include it in a header named "Vainamoinen-Api-Key"
 
-Make yourself a config.py file to the src folder.
+Make yourself a config.py file to the "vainamoinen" folder.
 
 MYSQL_HOST = "localhost"    //- default
 
