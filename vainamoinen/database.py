@@ -57,21 +57,21 @@ class GenericDatabaseModel(db.Model):
             for obj in objects:
                 obj_list.append(obj.serialize_public(include_jobs))
             return obj_list
-        
+
         if include_jobs:
             for obj in objects:
                 obj_list.append(obj.serialize(include_jobs))
             return obj_list
-        
+
         if public:
             for obj in objects:
                 obj_list.append(obj.serialize_public())
             return obj_list
-            
+
         for obj in objects:
             obj_list.append(obj.serialize())
         return obj_list
-    
+
 
     @classmethod
     def insert(cls, request_json):
@@ -137,7 +137,7 @@ class User(GenericDatabaseModel):
             for single_job in self.job: # type: ignore
                 user["jobs"].append(single_job.serialize())
         return user
-    
+
     def serialize_public(self, include_jobs=False):
         '''
         Omit sensitive user information, intended to be safe and accessible without any authorization
@@ -314,7 +314,7 @@ class Timetable(GenericDatabaseModel):
 
 class ApiKey(db.Model):
     """
-    Class for apikey handling. 
+    Class for apikey handling.
     """
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.String(32), nullable=False, unique=True)
@@ -329,7 +329,7 @@ class ApiKey(db.Model):
         Generates a hash for an API key
         '''
         return hashlib.sha256(key.encode()).digest()
-    
+
     def __init__(self, key, admin=False, user_id=None, **kwargs):
         """
         Constructor so that pylance recognizes these parameters statically
@@ -392,6 +392,13 @@ job_test_packet = {
 }
 ###chatGPT ends
 
+timetable_test_packet = {
+    "job_name": "test-job",
+    "title": "test-title",
+    "start_time": "2026-03-09T15:00:00",
+    "end_time": "2026-03-09T16:00:00",
+    "is_booked": False
+}
 
 def populate_database():
     """Function for populating the database users and jobs, change values on the size you want"""
@@ -404,7 +411,7 @@ def populate_database():
 
     for i in range(samplesize):
         new_user_data = user_test_packet.copy()
-        
+
         unique_suffix = str(uuid.uuid4())[:8]
         new_user_data["username"] = f"user_{unique_suffix}_{i}"
         new_user_data["email"] = f"email_{unique_suffix}@example.com"
@@ -417,15 +424,25 @@ def populate_database():
 
     for i in range(samplesize - 25):
         new_job_data = job_test_packet.copy()
-        
+
         random_user = random.choice(updated_users)
-        
+
         new_job_data["username"] = random_user["username"]
-        
+
         unique_id = str(uuid.uuid4())[:8]
         new_job_data["job_name"] = f"Job_{unique_id}_{i}"
-        
+
         Job.insert(new_job_data)
+
+        # add couple timetables for each job
+        new_timetable_data = timetable_test_packet.copy()
+        new_timetable_data["job_name"] = new_job_data["job_name"]
+        new_timetable_data["title"] = f"test-timetable-1-{new_job_data['job_name']}"
+        Timetable.insert(new_timetable_data)
+        new_timetable_data["title"] = f"test-timetable-2-{new_job_data['job_name']}"
+        new_timetable_data["start_time"] = "2026-03-09T16:00:00"
+        new_timetable_data["end_time"] = "2026-03-09T17:00:00"
+        Timetable.insert(new_timetable_data)
 
         ###########################################
         ### FOR DEVELOPMENT AND TESTING ONLY    ###

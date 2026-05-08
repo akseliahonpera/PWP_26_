@@ -20,12 +20,7 @@ def render_jobs(category = None):
         st.header("All Jobs")
         jobs = client.get_all_jobs().json()
         for i, job in enumerate(jobs):
-            c = st.container(border=True)
-            c.write(f"Username: {job['username']}")
-            c.write(f"Job name: {job['job_name']}")
-            c.write(f"Description: {job['job_description']}")
-            if c.button(f"View More", key=i):
-                job_info(job)
+            job_item(job, i)
             st.space("small")
 
 def render_job_search(search_query):
@@ -34,6 +29,15 @@ def render_job_search(search_query):
 
 def render_job():
     st.header("get all job data and display prettily here")
+
+def job_item(job, key):
+    c = st.container(border=True)
+    c.write(f"Username: {job['username']}")
+    c.write(f"Job name: {job['job_name']}")
+    c.write(f"Description: {job['job_description']}")
+
+    if c.button(f"View More", key=key):
+        job_info(job)
 
 @st.dialog("About job:")
 def job_info(job):
@@ -47,7 +51,30 @@ def job_info(job):
     st.write(f"Created: {job['created']}")
     st.write(f"Opening hours: {job['opening_hours']}")
     st.write(f"Category: {job['category']}")
-    
+    st.write("")
+    timetables(job)
+
+def timetables(job):
+    '''
+    Get and show timetables
+    '''
+    timetables = client.get_timetables(job['job_name']).json()
+
+    if len(timetables) == 0:
+        st.write("No timetables found for the job.")
+    else:
+        st.write("Timetables:")
+        for timetable in timetables:
+            c = st.container(border=True)
+            c.write(f"Title: {timetable['title']}")
+            c.write(f"{timetable['start_time']} - {timetable['end_time']}")
+
+            if timetable['is_booked']:
+                c.write("Status: Not Available")
+            else:
+                c.write("Status: Available.")
+
+
 @st.dialog("Add a job:")
 def add_job():
     '''
@@ -61,7 +88,7 @@ def add_job():
     location = st.text_input("Location:", "")
     opening_hours = st.text_input("Opening Hours:", "")
     category = st.text_input("Category:", "")
-    
+
     if st.button("Add"):
         new_job = {
             "username": username,
