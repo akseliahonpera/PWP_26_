@@ -47,6 +47,10 @@ def job_info(job):
     st.write(f"Created: {job['created']}")
     st.write(f"Opening hours: {job['opening_hours']}")
     st.write(f"Category: {job['category']}")
+    ##muuta deploymenttiin oikea serveri
+    mapAuxParams = f"http://localhost:5173?lon={job['longitude']}&lat={job['latitude']}&label={job['job_name']}"
+    st.iframe(src=mapAuxParams, height=600)#korjaa, on hieman paska atm, offset
+
     
 @st.dialog("Add a job:")
 def add_job():
