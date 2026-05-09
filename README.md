@@ -15,6 +15,7 @@ MYSQL server running on localhost
 Create database to the MYSQL server through MYSQL shell by using CREATE DATABASE IF NOT EXISTS <yourdb>.
 
 Populate the database by running the database_ORM.py directly or by using source <resource_path> for the dump file in test_dumpfiles_db folder.
+(Currently sqlite database populates itself if code notices it doesnt exist)
  
 - install following with pip
 datetime
@@ -25,10 +26,15 @@ pymysql
 flasgger
 streamlit
 
+## Väinämoinen API server instructions
+To run the app:
+- Go to project root
+- Start up API with command "flask --app=vainamoinen run" OR "flask --app=vainamoinen --debug run"
+
 When you run the app, remember to save the API key from console output! 
 To use API key, include it in a header named "Vainamoinen-Api-Key"
 
-Make yourself a config.py file to the src folder.
+Make yourself a config.py file to the "vainamoinen" folder.
 
 MYSQL_HOST = "localhost"    //- default
 
@@ -42,6 +48,11 @@ MYSQL_DB = ""               //- your desired name for the database as in line 4 
 
 SECRET_KEY = ""             //- irrelevant in this
 
+## Streamlit UI instructions
+- Make sure that pip installed streamlit and its dependencies
+- Go to project-root/ui folder
+- Start up UI with command "streamlit run app.py"
+- Depending on where the Väinämöinen API server is running, change the IP address from the main page (defaults to localhost, instructions to launch API above)
 
 ///TEE dedis 3:een
 A README.md file containing:
