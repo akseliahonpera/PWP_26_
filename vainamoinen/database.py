@@ -14,7 +14,7 @@ from sqlalchemy import event
 from flask.cli import with_appcontext
 
 db = SQLAlchemy()
-
+"""
 @event.listens_for(Engine, "connect")
 def set_mysql_pragma(dbapi_connection, _):
     '''Enable foreign keys'''
@@ -22,7 +22,7 @@ def set_mysql_pragma(dbapi_connection, _):
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
-
+"""
 ###############################################################
 ######### Database global for module use ######################
 ###############################################################
@@ -317,7 +317,7 @@ class ApiKey(db.Model):
     Class for apikey handling.
     """
     id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.String(32), nullable=False, unique=True)
+    key = db.Column(db.String(64), nullable=False, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
     admin = db.Column(db.Boolean, default=False)
 
@@ -328,7 +328,7 @@ class ApiKey(db.Model):
         '''
         Generates a hash for an API key
         '''
-        return hashlib.sha256(key.encode()).digest()
+        return hashlib.sha256(key.encode()).hexdigest()
 
     def __init__(self, key, admin=False, user_id=None, **kwargs):
         """
