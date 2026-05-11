@@ -15,7 +15,7 @@ def render_jobs(category = None):
     Rendering function for all jobs
     Category can be used to limit the rendered jobs
     '''
-    # testing adding a job through a pop up
+
     if client.user != "":
         if st.button("Add a new job"):
             add_job()
@@ -86,7 +86,7 @@ def job_info(job, key):
 @st.dialog("Add a job:")
 def add_job():
     '''
-    test
+    A pop up to add a new job
     '''
     job_name = st.text_input("Job Name", "")
     job_desc = st.text_input("Description", "")
@@ -113,7 +113,7 @@ def add_job():
 @st.dialog("Edit a job:")
 def edit_job(job):
     '''
-    Edit
+    A pop up to edit a job
     '''
     job_desc = st.text_input("Description", job["job_description"])
     latitude = st.text_input("Latitude:", job["latitude"])
@@ -139,7 +139,7 @@ def edit_job(job):
 @st.dialog("Are you sure you want to delete this job?")
 def delete_job(job):
     '''
-    Delete
+    A pop up to delete a job
     '''
     st.warning(f"Deleting: {job['job_name']}")
 

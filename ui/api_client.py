@@ -52,6 +52,7 @@ class APIClient:
     def get_all_jobs(self):
         '''
         API call
+        Get all jobs
         '''
         return requests.get(
             f"{self.ip}/jobs",
@@ -62,6 +63,7 @@ class APIClient:
     def post_job(self, job):
         '''
         API call
+        Post a new job
         '''
         return requests.post(
             f"{self.ip}/jobs",
@@ -73,6 +75,7 @@ class APIClient:
     def delete_job(self, job_name):
         '''
         API call
+        Delete a job
         '''
         return requests.delete(
             f"{self.ip}/jobs/{job_name}",
@@ -83,6 +86,7 @@ class APIClient:
     def get_job(self, job_name):
         '''
         API call
+        Get a specific job
         '''
         return requests.get(
             f"{self.ip}/jobs/{job_name}",
@@ -93,6 +97,7 @@ class APIClient:
     def update_job(self, job):
         '''
         API call
+        Update a job with new data
         '''
         return requests.put(
             f"{self.ip}/jobs/{job['job_name']}",
@@ -108,6 +113,7 @@ class APIClient:
     def get_timetables(self, job_name):
         '''
         API call
+        Get all timetables of a job
         '''
         return requests.get(
             f"{self.ip}/jobs/{job_name}/timetables",
@@ -118,6 +124,7 @@ class APIClient:
     def post_timetable(self, job_name, timetable):
         '''
         API Call
+        Post a new timetable for a job
         '''
         return requests.post(
             f"{self.ip}/jobs/{job_name}/timetables",
@@ -129,6 +136,7 @@ class APIClient:
     def delete_timetable(self, job_name, timetable_name):
         '''
         API call
+        Delete a timetable
         '''
         return requests.delete(
             f"{self.ip}/jobs/{job_name}/timetables/{timetable_name}",
@@ -139,6 +147,7 @@ class APIClient:
     def get_timetable(self, job_name, timetable_name):
         '''
         API call
+        Get a specific timetable
         '''
         return requests.get(
             f"{self.ip}/jobs/{job_name}/timetables/{timetable_name}",
@@ -149,6 +158,7 @@ class APIClient:
     def update_timetable(self, job_name, timetable):
         '''
         API call
+        Update a timetable with new data
         '''
         return requests.put(
             f"{self.ip}/jobs/{job_name}/timetables/{timetable['title']}",
@@ -165,6 +175,7 @@ class APIClient:
     def get_users(self):
         '''
         API call
+        Get all users
         '''
         return requests.get(
             f"{self.ip}/users",
@@ -175,6 +186,7 @@ class APIClient:
     def post_user(self, user):
         '''
         API call
+        Post a new user
         '''
         return requests.post(
             f"{self.ip}/users",
@@ -186,6 +198,7 @@ class APIClient:
     def delete_user(self, user_name):
         '''
         API call
+        Delete a user
         '''
         return requests.delete(
             f"{self.ip}/users/{user_name}",
@@ -196,6 +209,7 @@ class APIClient:
     def get_user(self, user_name):
         '''
         API call
+        Get a specific user
         '''
         return requests.get(
             f"{self.ip}/users/{user_name}",
@@ -206,6 +220,7 @@ class APIClient:
     def update_user(self, user):
         '''
         API call
+        Update a user with new data
         '''
         return requests.put(
             f"{self.ip}/users/{user['user_name']}",
@@ -217,6 +232,7 @@ class APIClient:
     def get_user_jobs(self, user_name):
         '''
         API call
+        Get jobs of a user
         '''
         return requests.get(
             f"{self.ip}/users/{user_name}/jobs",
@@ -232,6 +248,7 @@ class APIClient:
     def get_users_public(self):
         '''
         API call
+        Get all users
         '''
         return requests.get(
             f"{self.ip}/public/users",
@@ -242,6 +259,7 @@ class APIClient:
     def get_user_public(self, user_name):
         '''
         API call
+        Get a user
         '''
         return requests.get(
             f"{self.ip}/public/users/{user_name}",
