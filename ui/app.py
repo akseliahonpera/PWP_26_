@@ -14,7 +14,7 @@ import streamlit as st
 ###############################################################################################
 from renders.jobs import render_job_search, render_jobs #pylint: disable=import-error
 from renders.main_menu import render_main_menu #pylint: disable=import-error
-from renders.users import render_all_users, render_public_profile, render_signup, render_user_search #pylint: disable=import-error
+from renders.users import render_all_users, render_login, render_public_profile, render_signup, render_user_search #pylint: disable=import-error
 from renders.users import render_owned_profile #pylint: disable=import-error
 
 from api_client import APIClient #pylint: disable=import-error
@@ -64,16 +64,16 @@ if st.sidebar.button("Jobs by category"):
     st.session_state["category"] = category
     st.session_state.page = "jobs"
 
+menu_options = ["main_menu", "signup", "login"]
 
-
-if st.session_state.page == "main_menu":
+if st.session_state.page in menu_options:
     render_main_menu()
-
-#if st.session_state.page == "login":
-#    render_login()
 
 if st.session_state.page == "signup":
     render_signup()
+
+if st.session_state.page == "login":
+    render_login()
 
 # Call public route
 if st.session_state.page == "own_profile":

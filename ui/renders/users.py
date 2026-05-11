@@ -57,7 +57,41 @@ def render_login():
     '''
     Rendering function for login functionlality
     '''
-    # TODO: implement
+    st.header("Login page")
+    clicked = st.button("Log into your account")
+    if clicked:
+        log_in()
+
+@st.dialog("Log in with existing credentials")
+def log_in():
+    '''Rendering function for logging in, dialogue'''
+    st.write("Please provide your credentials")
+    username = st.text_input("Username", "")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Log in"):
+        # The .get_user call requires admin permissions
+        # Db/API should maybe have a service where passwords can be checked against usernames for validity
+        # without exposing said password through the API
+        response = client.get_user(username)
+
+        match response.status_code:
+            case 403:
+                st.write("You are not authorized for this action")
+                st.write("Set the correct API key from the main menu")
+            case 404:
+                st.write("The account does not exist")
+            case 200:
+                user = response.json()
+                if user["password"] == password:
+                    # TODO: Get and set the user API key from the user object to client state
+                    # once the auth implementation works
+                    client.set_user(username)
+                    st.write("Login successful!")
+                else:
+                    st.write("Password was incorrect")
+            case _:
+                response.raise_for_status()
 
 @st.dialog("Create a new user")
 def add_user():
@@ -82,4 +116,15 @@ def add_user():
     }
     if st.button("Create account"):
         response = client.post_user(payload)
-        st.info(response)
+        match response.status_code:
+            case 201:
+                client.set_user(username)
+                st.write("Account was created successfully!")
+            case 400:
+                st.write("Server couldn't validate the request (400)")
+            case 409:
+                st.write("A conflict occurred")
+            case 415:
+                st.write("Fields were not filled properly")
+            case _:
+                response.raise_for_status()

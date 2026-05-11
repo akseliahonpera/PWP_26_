@@ -30,7 +30,13 @@ def render_main_menu():
             st.write("Defaulting IP to localhost")
             client.set_ip(localhost=True)
 
-    login = st.button("Log in")
+    with st.expander(f"Current API key: {client.api_key}"):
+        new_key = st.text_input("New API key: ")
+        if st.button("Apply new API Key"):
+            st.write(f"Setting new API key of {new_key}")
+            client.set_api_key(new_key)
+
+    login = st.button("Log in (demo requires admin API key)")
     signup = st.button("Sign up")
 
     if login:
