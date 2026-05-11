@@ -13,6 +13,9 @@ from vainamoinen.utils import require_admin, require_user
 
 
 class JobItem(Resource):
+    '''
+    Resource for singular Job object
+    '''
 
     def get(self, job):
         '''
@@ -23,7 +26,7 @@ class JobItem(Resource):
         - $ref: '#/components/parameters/job'
         responses:
           '200':
-            description: All data of the chosen job 
+            description: All data of the chosen job
             content:
               application/json:
                 example:
@@ -32,6 +35,8 @@ class JobItem(Resource):
                   job_name: lawnmowing
                   job_description: I'm available to cut your grass at 15e/hour!
                   location: Oulu area
+                  latitude: 37.7749
+                  longitude: 122.4194
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00
                   category: Yardwork
@@ -50,7 +55,7 @@ class JobItem(Resource):
         parameters:
         - $ref: '#/components/parameters/job'
         requestBody:
-          description: JSON document that contains new data for the job 
+          description: JSON document that contains new data for the job
           content:
             application/json:
               schema:
@@ -61,13 +66,15 @@ class JobItem(Resource):
                 job_name: Smuggling
                 job_description: I'm available to deliver contraband items within Finland!
                 location: Finland
+                latitude: 37.7749
+                longitude: 122.4194
                 created: 2026-04-05 10:24:34.875360
                 opening_hours: Mon-Fri 8:00 - 17:00, Sat-Sun 10:00-14:00
                 category: Black market
         responses:
           '204':
             description: Job was updated successfully
-          '400':                
+          '400':
             description: Server couldn't validate the request
           '409':
             description: A conflict was raised when attempting to update job data
@@ -84,14 +91,14 @@ class JobItem(Resource):
         try:
             validate(request.json, Job.json_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         try:
             job.update(request.json)
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in JobItem put."
-            )
+            ) from e
         return Response(status=204)
 
     #Change to require_user when that fiasco code is cleaned
@@ -117,14 +124,17 @@ class JobItem(Resource):
         '''
         try:
             job.delete()
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in JobItem delete."
-            )
+            ) from e
         return Response(status=204)
 
 
 class JobCollection(Resource):
+    '''
+    Resource for JobCollection
+    '''
 
     def get(self):
         '''
@@ -142,17 +152,19 @@ class JobCollection(Resource):
                   job_name: Smuggling
                   job_description: I'm available to deliver contraband items within Finland!
                   location: Finland
+                  latitude: 40.6892
+                  longitude: 74.0445
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat-Sun 10:00-14:00
                   category: Black market
-                - id: 2 
-                  username: Jukka751 
+                - id: 2
+                  username: Jukka751
                   job_name: Advertisement
                   job_description: I'm available to advertise your business outside with a sign!
                   location: Tampere
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat 10:00-14:00
-                  category: Marketing 
+                  category: Marketing
         '''
         return Job.query_all()
 
@@ -162,20 +174,22 @@ class JobCollection(Resource):
         ---
         description: Add a new job to the database
         requestBody:
-          description: JSON document that contains all data for the job 
+          description: JSON document that contains all data for the job
           content:
             application/json:
               schema:
                 $ref: '#components/schemas/Job'
               example:
-                  id: 2 
-                  username: Jukka751 
+                  id: 2
+                  username: Jukka751
                   job_name: Advertisement
                   job_description: I'm available to advertise your business outside with a sign!
                   location: Tampere
+                  latitude: 40.6892
+                  longitude: 74.0445
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat 10:00-14:00
-                  category: Marketing 
+                  category: Marketing
         responses:
           '201':
             description: Job was created and uploaded successfully
@@ -198,18 +212,21 @@ class JobCollection(Resource):
         try:
             validate(request.json, Job.json_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         try:
             job = Job.insert(request.json)
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in JobCollection post."
-            )
+            ) from e
         return Response(status=201, headers={"Location":url_for("api.jobitem", job=job)})
 
 
 class UserItemsJobCollection(Resource):
+    '''
+    Resource where all jobs belonging to a singular user can be fetched
+    '''
 
     def get(self, user):
         '''
@@ -229,17 +246,21 @@ class UserItemsJobCollection(Resource):
                   job_name: Smuggling
                   job_description: I'm available to deliver contraband items within Finland!
                   location: Finland
+                  latitude: 40.6892
+                  longitude: 74.0445
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat-Sun 10:00-14:00
                   category: Black market
-                - id: 2 
-                  username: lawnmowerman734 
+                - id: 2
+                  username: lawnmowerman734
                   job_name: Advertisement
                   job_description: I'm available to advertise your business outside with a sign!
                   location: Tampere
+                  latitude: 40.6892
+                  longitude: 74.0445
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat 10:00-14:00
-                  category: Marketing 
+                  category: Marketing
         '''
         return Job.query_all(_filter_={"username": user.username})
 

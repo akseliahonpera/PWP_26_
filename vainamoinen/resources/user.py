@@ -3,7 +3,7 @@ User resources
 '''
 
 from flask import Response, request, url_for
-from flask_restful import Resource, reqparse
+from flask_restful import Resource
 from jsonschema import ValidationError, validate
 from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, Conflict, UnsupportedMediaType
@@ -12,6 +12,9 @@ from vainamoinen.database import User
 from vainamoinen.utils import require_user, require_admin
 
 class UserItem(Resource):
+    '''
+    Resource for a singular User object
+    '''
 
     @require_user
     def get(self, user):
@@ -95,14 +98,14 @@ class UserItem(Resource):
         try:
             validate(request.json, User.json_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         try:
             user.update(request.json)
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in UserItem put."
-            )
+            ) from e
         return Response(status=204)
 
     @require_user
@@ -127,13 +130,17 @@ class UserItem(Resource):
         '''
         try:
             user.delete()
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in UserItem delete."
-            )
+            ) from e
         return Response(status=204)
-    
+
 class PublicUserItem(Resource):
+    '''
+    Resource for a singular User item, uses a different serializer than the non-public
+    version. This version does not include private information
+    '''
     def get(self, user):
         '''
         Get a user, omitting private information
@@ -160,10 +167,13 @@ class PublicUserItem(Resource):
             include_jobs = True
 
         return User.serialize_public(user, include_jobs=include_jobs), 200
-    
+
 
 
 class UserCollection(Resource):
+    '''
+    Resource for UserCollection
+    '''
 
     @require_admin
     def get(self):
@@ -250,17 +260,21 @@ class UserCollection(Resource):
         try:
             validate(request.json, User.json_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         try:
             user = User.insert(request.json)
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in UserCollection post."
-            )
+            ) from e
         return Response(status=201, headers={"Location":url_for("api.useritem", user=user)})
 
 class PublicUserCollection(Resource):
+    '''
+    Resource for UserCollection
+    Does not include private information
+    '''
 
     def get(self):
         '''
@@ -291,7 +305,8 @@ class PublicUserCollection(Resource):
         if include_jobs_str in valid_true_values:
             include_jobs = True
 
-        # Note, never EVER omit the public parameter or change it to false unless you want lawsuits to appear
+        # Note, never EVER omit the public parameter or change it to false
+        # unless you want lawsuits to appear
         users = User.query_all(public=True, include_jobs=include_jobs)
 
         return users

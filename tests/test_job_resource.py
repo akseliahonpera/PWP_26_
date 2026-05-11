@@ -30,7 +30,7 @@ class TestJobCollection:
         '''
         job = _get_job_json(job_number=2, user_number=1)
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=job,
             headers = _headers()
         )
@@ -42,7 +42,7 @@ class TestJobCollection:
         '''
         job = _get_job_json(job_number=1, user_number=1)
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=job,
             headers = _headers()
         )
@@ -53,7 +53,7 @@ class TestJobCollection:
         Test posting with wrong mediatype
         '''
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             data="notJSON",
             headers = _headers(json=False)
         )
@@ -66,7 +66,7 @@ class TestJobCollection:
         job = _get_job_json(job_number=2, user_number=1)
         job.pop("location")
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=job,
             headers = _headers()
         )
@@ -109,7 +109,7 @@ class TestJobItem:
         '''
         valid = _get_job_json(job_number=1, user_number=1)
         resp = client.put(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=valid,
             headers = _headers()
         )
@@ -120,7 +120,7 @@ class TestJobItem:
         Test updating a job with wrong mediatype
         '''
         resp = client.put(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             data="notJSON",
             headers = _headers(json=False)
         )
@@ -133,7 +133,7 @@ class TestJobItem:
         not_valid = _get_job_json(job_number=1, user_number=1)
         not_valid.pop("location")
         resp = client.put(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=not_valid,
             headers = _headers()
         )

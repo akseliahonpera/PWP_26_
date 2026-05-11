@@ -32,7 +32,7 @@ class TestUserCollection:
         '''
         user = _get_user_json(3)
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=user,
             headers = _headers()
         )
@@ -44,7 +44,7 @@ class TestUserCollection:
         '''
         user = _get_user_json(1)
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=user,
             headers = _headers()
         )
@@ -55,7 +55,7 @@ class TestUserCollection:
         Test posting with wrong mediatype
         '''
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             data="notJSON",
             headers = _headers(json=False)
         )
@@ -68,7 +68,7 @@ class TestUserCollection:
         user = _get_user_json(3)
         user.pop("phone_number")
         resp = client.post(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=user,
             headers = _headers()
         )
@@ -113,7 +113,7 @@ class TestUserItem:
         '''
         valid = _get_user_json(1)
         resp = client.put(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=valid,
             headers = _headers()
         )
@@ -124,7 +124,7 @@ class TestUserItem:
         Test updating a user with wrong mediatype
         '''
         resp = client.put(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             data="notJSON",
             headers = _headers(json=False)
         )
@@ -137,7 +137,7 @@ class TestUserItem:
         not_valid = _get_user_json(1)
         not_valid.pop("phone_number")
         resp = client.put(
-            self.RESOURCE_URL, 
+            self.RESOURCE_URL,
             json=not_valid,
             headers = _headers()
         )

@@ -84,7 +84,7 @@ def require_admin(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip())
+        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip()).encode("utf-8")
         db_key = ApiKey.query.filter_by(admin=True).first()
         if secrets.compare_digest(key_hash, db_key.key): # type: ignore
             return func(*args, **kwargs)
@@ -93,19 +93,26 @@ def require_admin(func):
 
 def require_user(func):
     '''
-    Including this wrapper will create a requirement for the HTTP method to have a user API key corresponding to the user in question
+    Including this wrapper will create a requirement for the HTTP method to have a user API key
+    corresponding to the user in question.
     In case the API key has admin permissions, the method will be accepted
     '''
-    
+
     @wraps(func)
     def wrapper(self, user, *args, **kwargs):
-        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip())
+        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip()).encode("utf-8")
         db_key = ApiKey.query.filter_by(user=user).first()
         admin_key = ApiKey.query.filter_by(admin=True).first()
-        if db_key is not None and secrets.compare_digest(key_hash, db_key.key):
+        if db_key is not None and secrets.compare_digest(
+            key_hash,
+            db_key.key.encode("utf-8") if isinstance(db_key.key, str) else db_key.key
+        ):
             return func(self, user, *args, **kwargs)
-        if secrets.compare_digest(key_hash, admin_key.key): # type: ignore
+
+        if admin_key is not None and secrets.compare_digest(
+            key_hash,
+            admin_key.key.encode("utf-8") if isinstance(admin_key.key, str) else admin_key.key
+        ):
             return func(self, user, *args, **kwargs)
         raise Forbidden
     return wrapper
- 

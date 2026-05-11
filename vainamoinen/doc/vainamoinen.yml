@@ -92,6 +92,12 @@ components:
         location:
           type: string
           description: Location of the job
+        latitude:
+          type: string
+          description: latitude coordinate of the job
+        longitude:
+          type: string
+          description: longitude coordinate of the job
         created:
           type: string
           format: date-time
@@ -108,17 +114,17 @@ components:
         id:
           type: integer
         job_name:
-          type: string 
+          type: string
           description: Job name that the timetable is associated with
         title:
-          type: string 
+          type: string
           description: Added field for resources
         start_time:
-          type: string 
+          type: string
           format: date-time
           description: Date-time stamp of the moment the job is available to rent
         end_time:
-          type: string 
+          type: string
           format: date-time
           description: Date-time stamp of the moment the job is no longer available to rent
         is_booked:

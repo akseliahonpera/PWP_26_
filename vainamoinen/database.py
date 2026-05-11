@@ -2,16 +2,17 @@
 Database models and functions
 '''
 
-from datetime import datetime
 import hashlib
 import random
 import secrets
 import uuid
+from datetime import datetime
+
 import click
-from sqlalchemy.engine import Engine
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import event
 from flask.cli import with_appcontext
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import event  # pylint: disable=unused-import
+from sqlalchemy.engine import Engine  # pylint: disable=unused-import
 
 db = SQLAlchemy()
 
@@ -107,15 +108,19 @@ class User(GenericDatabaseModel):
     '''
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(32), unique= True, nullable=False) ##set unique to false to test
+    username = db.Column(db.String(32), unique= True, nullable=False) # Set unique to false to test
     password= db.Column(db.String(255), nullable=False)
-    email = db.Column(db.String(63), unique= False, nullable=False) ##set unique to false to test
+    email = db.Column(db.String(63), unique= False, nullable=False) # Set unique to false to test
     address = db.Column(db.String(63), nullable=False)
     phone_number = db.Column(db.String(31), nullable=False)
     description = db.Column(db.Text(255), nullable=False)
     created = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    job = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")###relation
-    api_key = db.relationship("ApiKey", back_populates="user", uselist=False, cascade="all, delete-orphan")
+    job = db.relationship("Job",cascade="all,delete-orphan", back_populates = "user")# Relation
+    api_key = db.relationship("ApiKey",
+                              back_populates="user",
+                              uselist=False,
+                              cascade="all, delete-orphan"
+                            )
 
     def serialize(self, include_jobs=False):
         '''
@@ -140,8 +145,8 @@ class User(GenericDatabaseModel):
 
     def serialize_public(self, include_jobs=False):
         '''
-        Omit sensitive user information, intended to be safe and accessible without any authorization
-        # TODO: Do we include address and phone number here? omitting them for time being but might be changed in the future
+        Omit sensitive user information,
+        intended to be safe and accessible without any authorization
         '''
         user = {
             "username": self.username,
@@ -157,7 +162,7 @@ class User(GenericDatabaseModel):
 
     def deserialize(self, user):
         '''
-        TODO: doc-string
+        Deserialization function
         '''
         self.username = user["username"]
         self.password = user["password"]
@@ -169,7 +174,7 @@ class User(GenericDatabaseModel):
     @staticmethod
     def json_schema():
         '''
-        TODO: doc-string
+        JSON schema static method
         '''
         schema = {"type": "object",
             "required": ["username", "password","email","address","phone_number","description"]
@@ -184,15 +189,15 @@ class User(GenericDatabaseModel):
         return schema
 
 
-
-class Job(GenericDatabaseModel):
+# Why does pylint want to whine about the amount of instance attributes??
+class Job(GenericDatabaseModel): # pylint: disable=too-many-instance-attributes
     '''
     Job database model
     '''
 
     id = db.Column(db.Integer, primary_key=True)
     username=db.Column(db.String(32),db.ForeignKey(User.username,ondelete="CASCADE"),nullable=False)
-    job_name = db.Column(db.String(63),unique=True, nullable=False)#lisätty kenttä resursseja varte
+    job_name = db.Column(db.String(63),unique=True, nullable=False)
     job_description = db.Column(db.String(255), nullable=False)
     location = db.Column(db.String(63),nullable=False)
     latitude = db.Column(db.String(31), nullable=False)
@@ -200,12 +205,12 @@ class Job(GenericDatabaseModel):
     created = db.Column(db.DateTime, default=datetime.now, nullable=False)
     opening_hours = db.Column(db.String(63),nullable=False)
     category = db.Column(db.String(31),nullable=False)
-    user = db.relationship("User",  back_populates = "job")###relation
+    user = db.relationship("User",  back_populates = "job") # Relation
     timetable = db.relationship("Timetable",cascade="all,delete-orphan", back_populates= "job")
 
     def serialize(self):
         '''
-         serializes job object
+        Serializes job object
         '''
         return {
             "id": self.id,
@@ -223,7 +228,7 @@ class Job(GenericDatabaseModel):
 
     def deserialize(self, job):
         '''
-        de-serializes job object
+        De-serializes job object
         '''
         self.username=job["username"]
         self.job_name=job["job_name"]
@@ -237,7 +242,7 @@ class Job(GenericDatabaseModel):
     @staticmethod
     def json_schema():
         '''
-        TODO: doc-string
+        JSON schema static method
         '''
         schema = {"type": "object",
             "required":[
@@ -263,13 +268,15 @@ class Timetable(GenericDatabaseModel):
     Timetable database model
     '''
     id = db.Column(db.Integer, primary_key=True)
-    job_name = db.Column(db.String(63), db.ForeignKey(Job.job_name,ondelete="CASCADE"),nullable=False)
-    title= db.Column(db.String(63),unique=True, nullable=False)####lisätty kenttä resursseja varten
-    start_time = db.Column(db.DateTime, nullable=True)##unix tms
-    end_time = db.Column(db.DateTime, nullable=True)##unix tms
+    job_name = db.Column(db.String(63),
+                        db.ForeignKey(Job.job_name,ondelete="CASCADE"),
+                        nullable=False)
+    title= db.Column(db.String(63),unique=True, nullable=False) # Lisätty kenttä resursseja varten
+    start_time = db.Column(db.DateTime, nullable=True) # unix tms
+    end_time = db.Column(db.DateTime, nullable=True) # unix tms
     is_booked = db.Column(db.Boolean,nullable=False)
     created = db.Column(db.DateTime, default=datetime.now, nullable=False)
-    job = db.relationship("Job",  back_populates = "timetable")###relation
+    job = db.relationship("Job",  back_populates = "timetable") # Relation
 
     def serialize(self):
         '''
@@ -306,13 +313,14 @@ class Timetable(GenericDatabaseModel):
             "required": ["title","is_booked"]
         }
         props = schema["properties"] = {}
-        props["title"] =        {"description": "tt entry title","type": "string"}
-        props["start_time"] =   {"description": "start time", "type": "string", "format": "date-time"}
-        props["end_time"] =     {"description": "end time ", "type": "string", "format": "date-time"}
-        props["is_booked"] =    {"description": "resrevation status","type": "boolean"}
+        props["title"]      = {"description": "tt entry title","type": "string"}
+        props["start_time"] = {"description": "start time", "type": "string", "format": "date-time"}
+        props["end_time"]   = {"description": "end time ", "type": "string", "format": "date-time"}
+        props["is_booked"]  = {"description": "resrevation status","type": "boolean"}
         return schema
 
-class ApiKey(db.Model):
+# I hate pylint 1 public method is perfectly fine here
+class ApiKey(db.Model): #pylint: disable=too-few-public-methods
     """
     Class for apikey handling.
     """
@@ -402,11 +410,6 @@ timetable_test_packet = {
 
 def populate_database():
     """Function for populating the database users and jobs, change values on the size you want"""
-    users = User.query_all()
-    if users is None:
-        userscount = 0
-    else:
-        userscount = len(users)
     samplesize = 50
 
     for i in range(samplesize):

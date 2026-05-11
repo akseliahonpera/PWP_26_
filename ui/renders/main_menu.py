@@ -1,3 +1,6 @@
+'''
+Contains all UI renders related to the main menu functionality
+'''
 import streamlit as st
 
 from api_client import APIClient #pylint: disable=import-error
@@ -8,6 +11,9 @@ if "client" not in  st.session_state:
 client = st.session_state.client
 
 def render_main_menu():
+    '''
+    Rendering function for main menu elements
+    '''
     st.header("Main menu")
     # include stuff like a short usage guide, ip change (client.set_ip) to a ui element
     # and maybe a login page and a link to signup page?
@@ -24,7 +30,13 @@ def render_main_menu():
             st.write("Defaulting IP to localhost")
             client.set_ip(localhost=True)
 
-    login = st.button("Log in")
+    with st.expander(f"Current API key: {client.api_key}"):
+        new_key = st.text_input("New API key: ")
+        if st.button("Apply new API Key"):
+            st.write(f"Setting new API key of {new_key}")
+            client.set_api_key(new_key)
+
+    login = st.button("Log in (demo requires admin API key)")
     signup = st.button("Sign up")
 
     if login:
