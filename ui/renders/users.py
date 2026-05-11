@@ -21,6 +21,39 @@ def render_owned_profile():
     Rendering function for a users own profile, with private information
     '''
     st.header("Your profile")
+    response = client.get_user(client.user)
+
+    match response.status_code:
+        case 200:
+            # TODO: make a pretty menu of all things relevant here,
+            # update user data, delete user, post jobs, route to said jobs, delete jobs etc.
+            user_data = response.json()
+            profile, jobs, settings = st.tabs(["profile", "jobs", "settings"])
+
+            ####################################
+            ### Profile page                 ###
+            ####################################
+
+            profile.write(f"Username: {user_data.get("username")}")
+            profile.write(f"Email: {user_data.get("email")}")
+            profile.write(f"Phone number: {user_data.get("phone_number")}")
+            profile.write(f"Phone number: {user_data.get("phone_number")}")
+            profile.write(f"Address: {user_data.get("address")}")
+            profile.space("xsmall")
+            profile.write(f"Your description: {user_data.get("description")}")
+            profile.space("xsmall")
+            profile.write(f"You created this account at: {user_data.get("created")}")
+
+            ####################################
+            ### Jobs page                    ###
+            ####################################
+
+            ####################################
+            ### Settings page                ###
+            ####################################
+        case 403:
+            st.write("API authentication key did not have valid permissions for this action")
+            st.write("Missing either matching user key or admin key")
 
 def render_signup():
     '''
