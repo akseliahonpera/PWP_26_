@@ -1,9 +1,9 @@
 # Meetings minutes
 
 ## Meeting 1.
-* **DATE:**
-* **PARTICIPANTS:**
-* **TEACHER:**
+* **DATE:** 3.2.2026
+* **PARTICIPANTS:** Akseli, Tino, Miro
+* **TEACHER:** Ivan
 
 ### Action points
 *List here the actions points discussed with assistants*
@@ -13,7 +13,7 @@
 
 
 ## Meeting 2.
-* **DATE:**
+* **DATE:**18.2.2026
 * **PARTICIPANTS:**
 * **TEACHER:**
 
@@ -25,7 +25,7 @@
 
 
 ## Meeting 3.
-* **DATE:**
+* **DATE:**9.3.2026
 * **PARTICIPANTS:**
 * **TEACHER:**
 
@@ -37,7 +37,7 @@
 
 
 ## Meeting 4.
-* **DATE:**
+* **DATE:**14.4.2026
 * **PARTICIPANTS:**
 * **TEACHER:**
 
@@ -61,7 +61,7 @@
 
 
 ## Final meeting
-* **DATE:**
+* **DATE:** 12.5.2026
 * **PARTICIPANTS:**
 * **TEACHER:**
 
