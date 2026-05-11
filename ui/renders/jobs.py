@@ -2,8 +2,8 @@
 Contains all UI renders related to job content
 '''
 import streamlit as st
-from datetime import datetime
 from api_client import APIClient #pylint: disable=import-error
+from renders.timetables import timetables
 
 if "client" not in  st.session_state:
     st.session_state.client = APIClient()
@@ -77,53 +77,11 @@ def job_info(job, key):
     st.write(f"Opening hours: {job['opening_hours']}")
     st.write(f"Category: {job['category']}")
     st.write("")
-    timetables(job, f"tt-{key}")
+    timetables(job)
     ##muuta deploymenttiin oikea serveri
     map_aux_params = f"http://84.250.22.64:80/map_aux/?lon={job['longitude']}&lat={job['latitude']}&label={job['job_name']}"
 
     st.iframe(src=map_aux_params, height=600)#korjaa, on hieman paska atm, offset
-
-
-
-def timetables(job, key):
-    '''
-    Get and show timetables
-    '''
-    timetable_objects = client.get_timetables(job['job_name']).json()
-
-    if len(timetable_objects) == 0:
-        st.write("No timetables found for the job.")
-    else:
-        st.write("Timetables:")
-        for i, timetable in enumerate(timetable_objects):
-            c = st.container(border=True)
-            c.write(f"Title: {timetable['title']}")
-            c.write(f"{timetable['start_time']} - {timetable['end_time']}")
-
-            if timetable['is_booked']:
-                c.write("Status: Not Available")
-            else:
-                c.write("Status: Available.")
-
-            col1, col2 = c.columns(2)
-
-            if client.user == job['username']:
-                if col1.button("Edit", key=f"tt-edit-{i}"):
-                    edit_timetable(job, timetable)
-                if col2.button("Delete", key=f"tt-delete-{i}"):
-                    delete_timetable(job, timetable)
-
-
-    if "show_add_timetable" not in st.session_state:
-        st.session_state.show_add_timetable = False
-
-    if st.button("Add timetable"):
-        st.session_state.show_add_timetable = True
-
-    if st.session_state.show_add_timetable:
-        add_timetable(job)
-
-
 
 @st.dialog("Add a job:")
 def add_job():
@@ -194,43 +152,3 @@ def delete_job(job):
 
     if column2.button("Cancel"):
         st.rerun()
-
-def add_timetable(job):
-    '''
-    Add a timetable
-    '''
-    form = st.form("add_timetable_form")
-
-    title = form.text_input("Title", "")
-    #start_time = form.text_input("Start time:", "")
-    #end_time = form.text_input("End time:", "")
-
-    start_date = form.date_input("Start date")
-    start_time = form.time_input("Start time")
-
-    end_date = form.date_input("End date")
-    end_time = form.time_input("End time")
-
-    is_booked = form.checkbox("Booked")
-
-    if form.form_submit_button("Add."):
-        start = datetime.combine(start_date, start_time).isoformat()
-        end = datetime.combine(end_date, end_time).isoformat()
-
-        new_timetable = {
-            "job_name": job['job_name'],
-            "title": title,
-            "start_time": start,
-            "end_time": end,
-            "is_booked": is_booked
-        }
-        response = client.post_timetable(job['job_name'], new_timetable)
-
-        st.session_state.show_add_timetable = False
-        st.success(response)
-
-def edit_timetable(job, timetable):
-    pass
-
-def delete_timetable(job, timetable):
-    pass

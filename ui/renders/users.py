@@ -127,7 +127,6 @@ def log_in():
                     # once the auth implementation works
                     client.set_user(username)
                     st.write("Login successful!")
-                    st.rerun()
                 else:
                     st.write("Password was incorrect")
             case _:

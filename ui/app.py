@@ -44,9 +44,8 @@ st.session_state["search_query"] = ""
 if st.sidebar.button("Main menu"):
     st.session_state.page = "main_menu"
 
-if client.user != "":
-    if st.sidebar.button("Profile"):
-        st.session_state.page = "own_profile"
+if st.sidebar.button("Profile"):
+    st.session_state.page = "own_profile"
 
 if st.sidebar.button("See all users"):
     st.session_state.page = "all_users"

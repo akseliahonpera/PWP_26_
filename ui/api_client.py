@@ -150,7 +150,7 @@ class APIClient:
         '''
         API call
         '''
-        return requests.get(
+        return requests.put(
             f"{self.ip}/jobs/{job_name}/timetables/{timetable['title']}",
             json=timetable,
             headers=self._headers(),
