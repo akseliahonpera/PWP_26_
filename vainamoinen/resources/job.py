@@ -26,7 +26,7 @@ class JobItem(Resource):
         - $ref: '#/components/parameters/job'
         responses:
           '200':
-            description: All data of the chosen job 
+            description: All data of the chosen job
             content:
               application/json:
                 example:
@@ -55,7 +55,7 @@ class JobItem(Resource):
         parameters:
         - $ref: '#/components/parameters/job'
         requestBody:
-          description: JSON document that contains new data for the job 
+          description: JSON document that contains new data for the job
           content:
             application/json:
               schema:
@@ -74,7 +74,7 @@ class JobItem(Resource):
         responses:
           '204':
             description: Job was updated successfully
-          '400':                
+          '400':
             description: Server couldn't validate the request
           '409':
             description: A conflict was raised when attempting to update job data
@@ -157,14 +157,14 @@ class JobCollection(Resource):
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat-Sun 10:00-14:00
                   category: Black market
-                - id: 2 
-                  username: Jukka751 
+                - id: 2
+                  username: Jukka751
                   job_name: Advertisement
                   job_description: I'm available to advertise your business outside with a sign!
                   location: Tampere
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat 10:00-14:00
-                  category: Marketing 
+                  category: Marketing
         '''
         return Job.query_all()
 
@@ -174,14 +174,14 @@ class JobCollection(Resource):
         ---
         description: Add a new job to the database
         requestBody:
-          description: JSON document that contains all data for the job 
+          description: JSON document that contains all data for the job
           content:
             application/json:
               schema:
                 $ref: '#components/schemas/Job'
               example:
-                  id: 2 
-                  username: Jukka751 
+                  id: 2
+                  username: Jukka751
                   job_name: Advertisement
                   job_description: I'm available to advertise your business outside with a sign!
                   location: Tampere
@@ -189,7 +189,7 @@ class JobCollection(Resource):
                   longitude: 74.0445
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat 10:00-14:00
-                  category: Marketing 
+                  category: Marketing
         responses:
           '201':
             description: Job was created and uploaded successfully
@@ -251,8 +251,8 @@ class UserItemsJobCollection(Resource):
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat-Sun 10:00-14:00
                   category: Black market
-                - id: 2 
-                  username: lawnmowerman734 
+                - id: 2
+                  username: lawnmowerman734
                   job_name: Advertisement
                   job_description: I'm available to advertise your business outside with a sign!
                   location: Tampere
@@ -260,7 +260,7 @@ class UserItemsJobCollection(Resource):
                   longitude: 74.0445
                   created: 2026-04-05 10:24:34.875360
                   opening_hours: Mon-Fri 8:00 - 17:00, Sat 10:00-14:00
-                  category: Marketing 
+                  category: Marketing
         '''
         return Job.query_all(_filter_={"username": user.username})
 

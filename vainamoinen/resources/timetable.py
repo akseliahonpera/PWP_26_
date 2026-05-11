@@ -73,7 +73,7 @@ class TimeTableItem(Resource):
         responses:
           '204':
             description: Timetable was updated successfully
-          '400':                
+          '400':
             description: Server couldn't validate the request
           '409':
             description: A conflict was raised when attempting to update timetable data
@@ -113,7 +113,7 @@ class TimeTableItem(Resource):
           '204':
             description: timetable deleted successfully
           '409':
-            description: A conflict was raised when attempting to delete timetable 
+            description: A conflict was raised when attempting to delete timetable
           '404':
             description: Timetable not found
           '403':
@@ -152,7 +152,7 @@ class TimeTableCollection(Resource):
                   end_time: 2025-12-31 10:24:34.875360
                   is_booked: false
                   created: 2024-04-05 10:24:34.875360
-                - id: 2 
+                - id: 2
                   job_name: leafblowing
                   title: TO BE DETERMINED
                   start_time: 2026-01-01 10:24:34.875360
@@ -179,7 +179,7 @@ class TimeTableCollection(Resource):
                   title: TO BE DETERMINED
                   start_time: 2024-04-05 10:24:34.875360
                   end_time: 2025-12-31 10:24:34.875360
-                - id: 2 
+                - id: 2
                   job_name: leafblowing
                   title: TO BE DETERMINED
                   start_time: 2026-01-01 10:24:34.875360

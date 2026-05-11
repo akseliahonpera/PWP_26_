@@ -115,6 +115,17 @@ class APIClient:
             timeout=5.0
         )
 
+    def post_timetable(self, job_name, timetable):
+        '''
+        API Call
+        '''
+        return requests.post(
+            f"{self.ip}/jobs/{job_name}/timetables",
+            json=timetable,
+            headers=self._headers(),
+            timeout=5.0
+        )
+
     def delete_timetable(self, job_name, timetable_name):
         '''
         API call

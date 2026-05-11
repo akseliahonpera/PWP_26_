@@ -4,6 +4,7 @@ Contains all UI renders related to user content
 import streamlit as st
 
 from api_client import APIClient #pylint: disable=import-error
+from renders.jobs import job_item
 
 if "client" not in  st.session_state:
     st.session_state.client = APIClient()
@@ -34,19 +35,24 @@ def render_owned_profile():
             ### Profile page                 ###
             ####################################
 
-            profile.write(f"Username: {user_data.get("username")}")
-            profile.write(f"Email: {user_data.get("email")}")
-            profile.write(f"Phone number: {user_data.get("phone_number")}")
-            profile.write(f"Phone number: {user_data.get("phone_number")}")
-            profile.write(f"Address: {user_data.get("address")}")
+            profile.write(f"Username: {user_data.get('username')}")
+            profile.write(f"Email: {user_data.get('email')}")
+            profile.write(f"Phone number: {user_data.get('phone_number')}")
+            profile.write(f"Address: {user_data.get('address')}")
             profile.space("xsmall")
-            profile.write(f"Your description: {user_data.get("description")}")
+            profile.write(f"Your description: {user_data.get('description')}")
             profile.space("xsmall")
-            profile.write(f"You created this account at: {user_data.get("created")}")
+            profile.write(f"You created this account at: {user_data.get('created')}")
 
             ####################################
             ### Jobs page                    ###
             ####################################
+
+            user_jobs = client.get_all_jobs().json()
+            for i, job in enumerate(user_jobs):
+                if client.user == job["username"]:
+                    job_item(job, i, jobs)
+            #    st.space("small")
 
             ####################################
             ### Settings page                ###
@@ -121,6 +127,7 @@ def log_in():
                     # once the auth implementation works
                     client.set_user(username)
                     st.write("Login successful!")
+                    st.rerun()
                 else:
                     st.write("Password was incorrect")
             case _:
