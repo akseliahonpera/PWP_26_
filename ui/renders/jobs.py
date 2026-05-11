@@ -79,8 +79,7 @@ def job_info(job, key):
     st.write("")
     timetables(job, f"tt-{key}")
     ##muuta deploymenttiin oikea serveri
-    map_aux_params = f"http://localhost:5173?lon={job['longitude']}" \
-    f"&lat={job['latitude']}&label={job['job_name']}"
+    map_aux_params = f"http://84.250.22.64:80/map_aux/?lon={job['longitude']}&lat={job['latitude']}&label={job['job_name']}"
 
     st.iframe(src=map_aux_params, height=600)#korjaa, on hieman paska atm, offset
 
