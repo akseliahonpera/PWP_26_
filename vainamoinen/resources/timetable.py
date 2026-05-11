@@ -9,7 +9,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.exceptions import BadRequest, Conflict, UnsupportedMediaType
 
 from vainamoinen.database import Timetable
-from vainamoinen.utils import require_user
+# from vainamoinen.utils import require_user
 
 class TimeTableItem(Resource):
     '''
@@ -90,14 +90,14 @@ class TimeTableItem(Resource):
         try:
             validate(request.json, Timetable.json_schema())
         except ValidationError as e:
-            raise BadRequest(description=str(e))
+            raise BadRequest(description=str(e)) from e
 
         try:
             timetable.update(request.json)
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in TimeTableItem put."
-            )
+            ) from e
         return Response(status=204)
 
     #@require_user
@@ -121,10 +121,10 @@ class TimeTableItem(Resource):
         '''
         try:
             timetable.delete()
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in TimeTableItem delete."
-            )
+            ) from e
         return Response(status=204)
 
 class TimeTableCollection(Resource):
@@ -138,7 +138,7 @@ class TimeTableCollection(Resource):
         ---
         description: Get all timetables associated with a specific job
         parameters:
-        - $ref: '#/components/parameters/job'
+        - $ref: '#/components/parameters/timetable'
         responses:
           '200':
             description: All data of the chosen timetables
@@ -161,8 +161,46 @@ class TimeTableCollection(Resource):
         '''
         return Timetable.query_all(_filter_={"job_name": job.job_name})
 
-    #TODO: Is this needed? no other Collection resource has a post method. Commenting out for now
     def post(self, job):
+        '''
+        Post multiple timetables
+        ---
+        description: Post a collection of timetable objects to a specific job
+        requestBody:
+          description: JSON document that contains all data for the timetables
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Timetable'
+              example:
+                example:
+                - id: 1
+                  job_name: leafblowing
+                  title: TO BE DETERMINED
+                  start_time: 2024-04-05 10:24:34.875360
+                  end_time: 2025-12-31 10:24:34.875360
+                - id: 2 
+                  job_name: leafblowing
+                  title: TO BE DETERMINED
+                  start_time: 2026-01-01 10:24:34.875360
+        parameters:
+        - $ref: '#/components/parameters/timetable'
+        responses:
+          '201':
+            description: Timetables were created and uploaded successfully
+            headers:
+              Location:
+                description: URL of the newly created job resource
+                schema:
+                  type: string
+                  format: uri
+          '400':
+            description: Server couldn't validate the request
+          '409':
+            description: A conflict was raised when attempting to add the new job
+          '415':
+            description: Provided media was not valid JSON
+        '''
         if not request.json:
             raise UnsupportedMediaType
 
@@ -173,10 +211,13 @@ class TimeTableCollection(Resource):
 
         try:
             timetable = Timetable.insert(request.json)
-        except IntegrityError:
+        except IntegrityError as e:
             raise Conflict(
                 description="Error in TimeTableCollection post."
-            )
+            ) from e
         return Response(
-            status=201, headers={"Location":url_for("api.timetableitem", timetable=timetable, job=job)}
+            status=201, headers={"Location":url_for("api.timetableitem",
+                                                    timetable=timetable,
+                                                    job=job)
+                                }
         )

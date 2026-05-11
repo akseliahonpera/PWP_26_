@@ -92,6 +92,12 @@ components:
         location:
           type: string
           description: Location of the job
+        latitude:
+          type: string
+          description: latitude coordinate of the job
+        longitude:
+          type: string
+          description: longitude coordinate of the job
         created:
           type: string
           format: date-time

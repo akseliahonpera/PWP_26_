@@ -1,3 +1,6 @@
+'''
+Contains main application which runs and is started by Streamlit
+'''
 import streamlit as st
 
 ###############################################################################################
@@ -76,14 +79,16 @@ if st.session_state.page == "signup":
 if st.session_state.page == "own_profile":
     render_owned_profile()
 
-# !!To get UI to update to correct profile, update the state variable from UI input right before switching page to public_profile!!
+# !!To get UI to update to correct profile, update the state variable from UI input
+# #right before switching page to public_profile!!
 if st.session_state.page == "public_profile":
     render_public_profile(st.session_state["current_public_profile"])
 
 if st.session_state.page == "all_users":
     render_all_users()
 
-# !!To get UI to update to correct search, update the state variable from UI input right before switching page to user_search!!
+# !!To get UI to update to correct search, update the state variable from UI input
+# right before switching page to user_search!!
 if st.session_state.page == "user_search":
     render_user_search(st.session_state["search_query"])
 

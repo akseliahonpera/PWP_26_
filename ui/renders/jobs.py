@@ -1,3 +1,6 @@
+'''
+Contains all UI renders related to job content
+'''
 import streamlit as st
 
 from api_client import APIClient #pylint: disable=import-error
@@ -8,6 +11,10 @@ if "client" not in  st.session_state:
 client = st.session_state.client
 
 def render_jobs(category = None):
+    '''
+    Rendering function for all jobs
+    Category can be used to limit the rendered jobs
+    '''
     # testing adding a job through a pop up
     if st.button("Add a new job (temporary test)"):
         add_job()
@@ -24,19 +31,28 @@ def render_jobs(category = None):
             st.space("small")
 
 def render_job_search(search_query):
+    '''
+    Rendering function for a job search with a query
+    '''
     st.header(f"Search result for {search_query}")
     # Show jobs which were found by the query (or just the exact match)
 
 def render_job():
+    '''
+    Rendering function for the specific data of a specific job
+    '''
     st.header("get all job data and display prettily here")
 
 def job_item(job, key):
+    '''
+    Rendering function for short introductory data for a job
+    '''
     c = st.container(border=True)
     c.write(f"Username: {job['username']}")
     c.write(f"Job name: {job['job_name']}")
     c.write(f"Description: {job['job_description']}")
 
-    if c.button(f"View More", key=key):
+    if c.button("View More", key=key):
         job_info(job)
 
 @st.dialog("About job:")
@@ -54,8 +70,10 @@ def job_info(job):
     st.write("")
     timetables(job)
     ##muuta deploymenttiin oikea serveri
-    mapAuxParams = f"http://localhost:5173?lon={job['longitude']}&lat={job['latitude']}&label={job['job_name']}"
-    st.iframe(src=mapAuxParams, height=600)#korjaa, on hieman paska atm, offset
+    map_aux_params = f"http://localhost:5173?lon={job['longitude']}" \
+    f"&lat={job['latitude']}&label={job['job_name']}"
+
+    st.iframe(src=map_aux_params, height=600)#korjaa, on hieman paska atm, offset
 
 
 
@@ -63,13 +81,13 @@ def timetables(job):
     '''
     Get and show timetables
     '''
-    timetables = client.get_timetables(job['job_name']).json()
+    timetable_objects = client.get_timetables(job['job_name']).json()
 
-    if len(timetables) == 0:
+    if len(timetable_objects) == 0:
         st.write("No timetables found for the job.")
     else:
         st.write("Timetables:")
-        for timetable in timetables:
+        for timetable in timetable_objects:
             c = st.container(border=True)
             c.write(f"Title: {timetable['title']}")
             c.write(f"{timetable['start_time']} - {timetable['end_time']}")
@@ -78,8 +96,6 @@ def timetables(job):
                 c.write("Status: Not Available")
             else:
                 c.write("Status: Available.")
-
- 
 
 @st.dialog("Add a job:")
 def add_job():

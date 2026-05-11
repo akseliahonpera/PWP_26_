@@ -84,7 +84,7 @@ def require_admin(func):
 
     @wraps(func)
     def wrapper(*args, **kwargs):
-        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip())
+        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip()).encode("utf-8")
         db_key = ApiKey.query.filter_by(admin=True).first()
         if secrets.compare_digest(key_hash, db_key.key): # type: ignore
             return func(*args, **kwargs)
@@ -93,13 +93,14 @@ def require_admin(func):
 
 def require_user(func):
     '''
-    Including this wrapper will create a requirement for the HTTP method to have a user API key corresponding to the user in question
+    Including this wrapper will create a requirement for the HTTP method to have a user API key
+    corresponding to the user in question.
     In case the API key has admin permissions, the method will be accepted
     '''
-    
+
     @wraps(func)
     def wrapper(self, user, *args, **kwargs):
-        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip())
+        key_hash = ApiKey.key_hash(request.headers.get("Vainamoinen-Api-Key", "").strip()).encode("utf-8")
         db_key = ApiKey.query.filter_by(user=user).first()
         admin_key = ApiKey.query.filter_by(admin=True).first()
         if db_key is not None and secrets.compare_digest(key_hash, db_key.key):
@@ -108,4 +109,3 @@ def require_user(func):
             return func(self, user, *args, **kwargs)
         raise Forbidden
     return wrapper
- 

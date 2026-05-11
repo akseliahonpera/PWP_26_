@@ -1,10 +1,18 @@
+'''
+Very important module docstring
+Contains APIClient
+'''
 import requests
 
 class APIClient:
+    '''
+    Client class that connects UI with API backend with HTTP requests
+    '''
     def __init__(self):
         self.api_key = None
         self.ip = "http://localhost:5000/api"
-    
+        self.user = ""
+
     def set_api_key(self, key):
         '''
         Sets the api key, needed in some calls and included in all (even if for no effect)
@@ -21,8 +29,15 @@ class APIClient:
         '''
         if localhost:
             self.ip = "http://localhost:5000/api"
-        else:
+        elif ip != "":
             self.ip = ip
+
+    def set_user(self, user):
+        '''
+        Sets the username of the current user who logs in
+        Used to get data of own account
+        '''
+        self.user = user
 
     def _headers(self):
         return {"Vainamoinen-Api-Key": self.api_key,
@@ -85,7 +100,7 @@ class APIClient:
             headers=self._headers(),
             timeout=5.0
         )
-        
+
     ############################
     # /timetables functions    #
     ############################

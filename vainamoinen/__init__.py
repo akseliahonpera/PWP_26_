@@ -25,7 +25,8 @@ def create_app(test_config=None):
 
     app = Flask(__name__, instance_relative_config=True)
 
-    from .utils import UserConverter, JobConverter, TimeTableConverter # pylint: disable=import-outside-toplevel, this is also fine here (Probably)
+    #this is also fine here (Probably)
+    from .utils import UserConverter, JobConverter, TimeTableConverter # pylint: disable=import-outside-toplevel
 
     app.url_map.converters["user"] = UserConverter
     app.url_map.converters["job"] = JobConverter
@@ -42,11 +43,13 @@ def create_app(test_config=None):
     "openapi": "3.0.4",
     "uiversion": 3,
     }
-    swagger = Swagger(app, template_file="doc/vainamoinen.yml")
+
+    Swagger(app, template_file="doc/vainamoinen.yml")
 
     app.register_blueprint(api.api_bp)
 
-    from . import database # pylint: disable=import-outside-toplevel, this is also fine here (Probably)
+    # This is also fine here (Probably)
+    from . import database # pylint: disable=import-outside-toplevel
     app.cli.add_command(database.init_db_command)
 
     if test_config is None:

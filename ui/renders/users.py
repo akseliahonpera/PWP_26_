@@ -1,3 +1,6 @@
+'''
+Contains all UI renders related to user content
+'''
 import streamlit as st
 
 from api_client import APIClient #pylint: disable=import-error
@@ -8,24 +11,38 @@ if "client" not in  st.session_state:
 client = st.session_state.client
 
 def render_public_profile(username):
+    '''
+    Rendering function for a public profile
+    '''
     st.header(f"{username}'s profile")
 
 def render_owned_profile():
+    '''
+    Rendering function for a users own profile, with private information
+    '''
     st.header("Your profile")
 
 def render_signup():
+    '''
+    Rendering function for a signup page
+    '''
     st.header("User creation")
-    # Then compile a JSON, send on over to api_client.py func that calls API that adds new user to db
     clicked = st.button("Create a new account")
     if clicked:
         add_user()
 
 def render_user_search(search_query):
+    '''
+    Rendering function for a user search function
+    '''
     st.header(f"Search result for {search_query}")
-    #TODO
+    # TODO: implement
     # Show user profiles which were found by the query (or just the exact match)
 
 def render_all_users():
+    '''
+    Rendering function for seeing all users on the site
+    '''
     st.header("All users")
     users = client.get_users_public().json()
     for user in users:
@@ -37,11 +54,16 @@ def render_all_users():
         st.space("small")
 
 def render_login():
-    #TODO
-    x =1
+    '''
+    Rendering function for login functionlality
+    '''
+    # TODO: implement
 
 @st.dialog("Create a new user")
 def add_user():
+    '''
+    Rendering function for adding/posting a new user to the database
+    '''
     st.write("Please fill out all the following fields")
     username = st.text_input("Username", "")
     email = st.text_input("Email", "")

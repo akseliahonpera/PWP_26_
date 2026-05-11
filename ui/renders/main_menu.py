@@ -1,3 +1,6 @@
+'''
+Contains all UI renders related to the main menu functionality
+'''
 import streamlit as st
 
 from api_client import APIClient #pylint: disable=import-error
@@ -8,6 +11,9 @@ if "client" not in  st.session_state:
 client = st.session_state.client
 
 def render_main_menu():
+    '''
+    Rendering function for main menu elements
+    '''
     st.header("Main menu")
     # include stuff like a short usage guide, ip change (client.set_ip) to a ui element
     # and maybe a login page and a link to signup page?
