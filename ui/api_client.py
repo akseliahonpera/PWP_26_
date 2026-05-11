@@ -3,7 +3,7 @@ import requests
 class APIClient:
     def __init__(self):
         self.api_key = None
-        self.ip = "http://localhost:5000/api"
+        self.ip = "http://192.168.101.121:80/api"
     
     def set_api_key(self, key):
         '''

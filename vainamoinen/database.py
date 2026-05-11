@@ -14,7 +14,7 @@ from sqlalchemy import event
 from flask.cli import with_appcontext
 
 db = SQLAlchemy()
-"""
+
 @event.listens_for(Engine, "connect")
 def set_mysql_pragma(dbapi_connection, _):
     '''Enable foreign keys'''
@@ -22,7 +22,7 @@ def set_mysql_pragma(dbapi_connection, _):
     cursor.execute("PRAGMA foreign_keys=ON")
     cursor.close()
 
-"""
+
 ###############################################################
 ######### Database global for module use ######################
 ###############################################################
