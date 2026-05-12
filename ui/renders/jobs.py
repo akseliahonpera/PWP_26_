@@ -31,12 +31,25 @@ def render_jobs(category = None):
             job_item(job, i, st)
             st.space("small")
 
-def render_job_search(search_query):
+def render_job_search():
     '''
     Rendering function for a job search with a query
     '''
-    st.header(f"Search result for {search_query}")
-    # Show jobs which were found by the query (or just the exact match)
+    st.header("Search bar for jobs")
+    query =  st.text_input("Type a job name here", "")
+    if st.button("Search"):
+        if query == "":
+            st.write("Input a search parameter first")
+        else:
+            response = client.get_job(query)
+            match response.status_code:
+                case 200:
+                    c = st.container()
+                    job_item(response.json(), 1, c)
+                case 404:
+                    st.write("Job not found")
+                    st.write("Try another parameter, only specific matches show up")
+
 
 def render_job():
     '''

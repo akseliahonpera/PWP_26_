@@ -73,13 +73,29 @@ def render_signup():
     if clicked:
         add_user()
 
-def render_user_search(search_query):
+def render_user_search():
     '''
     Rendering function for a user search function
     '''
-    st.header(f"Search result for {search_query}")
-    # TODO: implement
-    # Show user profiles which were found by the query (or just the exact match)
+    st.header("Search bar for users")
+    query =  st.text_input("Type a username here", "")
+    if st.button("Search"):
+        if query == "":
+            st.write("Input a search parameter first")
+        else:
+            response = client.get_user_public(query)
+            match response.status_code:
+                case 200:
+                    c = st.container()
+                    public_profile(response.json(), 1, c)
+                    response = client.get_user_jobs(query)
+                    if response.status_code == 200:
+                        job_c = st.container()
+                        for i, job in enumerate(response.json()):
+                            job_item(job, i, job_c)
+                case 404:
+                    st.write("User not found")
+                    st.write("Try another parameter, only specific matches show up")
 
 def render_all_users():
     '''
@@ -134,6 +150,14 @@ def log_in():
                     st.write("Password was incorrect")
             case _:
                 response.raise_for_status()
+
+def public_profile(user, key, draw_place):
+    '''
+    Streamlit dialog function for a public profile
+    '''
+    st.write(f"Username: {user.get('username')}")
+    st.write(f"Email: {user.get('email')}")
+    st.write(f"Description: {user.get('description')}")
 
 @st.dialog("Create a new user")
 def add_user():

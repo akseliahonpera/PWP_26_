@@ -91,7 +91,7 @@ if st.session_state.page == "all_users":
 # !!To get UI to update to correct search, update the state variable from UI input
 # right before switching page to user_search!!
 if st.session_state.page == "user_search":
-    render_user_search(st.session_state["search_query"])
+    render_user_search()
 
 # Same as above, right before changing page to job_search, update category
 # render_jobs sets category back to None in case user doesn't search with a category
@@ -100,4 +100,4 @@ if st.session_state.page == "jobs":
     render_jobs(st.session_state["category"])
 
 if st.session_state.page == "job_search":
-    render_job_search(st.session_state["search_query"])
+    render_job_search()
