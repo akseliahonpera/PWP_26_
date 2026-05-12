@@ -1,6 +1,7 @@
 datetime
 flask
 flask_sqlalchemy
+flask_restful
 sqlalchemy_utils
 pymysql
 flasgger
