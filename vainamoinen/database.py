@@ -393,8 +393,8 @@ job_test_packet = {
         "is_booked": False
     },
     "location": "Downtown Cafe, Springfield",
-    "latitude": "57.34.54.23.2333",
-    "longitude": "27.36.34.23.1233",
+    "latitude": "57.3454",
+    "longitude": "27.3634",
     "opening_hours": "08:00-14:00",
     "category": "Hospitality"
 }
@@ -434,7 +434,8 @@ def populate_database():
 
         unique_id = str(uuid.uuid4())[:8]
         new_job_data["job_name"] = f"Job_{unique_id}_{i}"
-
+        new_job_data["longitude"] = round(random.random()*90.0000,4);
+        new_job_data["latitude"] = round(random.random()*90.0000,4);
         Job.insert(new_job_data)
 
         # add couple timetables for each job
@@ -446,6 +447,33 @@ def populate_database():
         new_timetable_data["start_time"] = "2026-03-09T16:00:00"
         new_timetable_data["end_time"] = "2026-03-09T17:00:00"
         Timetable.insert(new_timetable_data)
+
+
+    
+    for i in range(samplesize - 25):
+        new_job_data = job_test_packet.copy()
+
+        random_user = random.choice(updated_users)
+
+        new_job_data["username"] = random_user["username"]
+
+        unique_id = str(uuid.uuid4())[:8]
+        new_job_data["job_name"] = f"Job_{unique_id}_{i}"
+        new_job_data["longitude"] = round(random.random()*90.0000,4);
+        new_job_data["latitude"] = round(random.random()*90.0000,4);
+        new_job_data["category"] = "barber";
+        Job.insert(new_job_data)
+
+        # add couple timetables for each job
+        new_timetable_data = timetable_test_packet.copy()
+        new_timetable_data["job_name"] = new_job_data["job_name"]
+        new_timetable_data["title"] = f"test-timetable-1-{new_job_data['job_name']}"
+        Timetable.insert(new_timetable_data)
+        new_timetable_data["title"] = f"test-timetable-2-{new_job_data['job_name']}"
+        new_timetable_data["start_time"] = "2026-03-09T16:00:00"
+        new_timetable_data["end_time"] = "2026-03-09T17:00:00"
+        Timetable.insert(new_timetable_data)
+
 
         ###########################################
         ### FOR DEVELOPMENT AND TESTING ONLY    ###

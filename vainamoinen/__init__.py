@@ -8,7 +8,7 @@ from flasgger import Swagger
 #from flask_caching import Cache
 from . import api
 from .database import db
-
+from flask_cors import CORS, cross_origin
 #cache = Cache()
 
 
@@ -24,7 +24,9 @@ def create_app(test_config=None):
     '''
 
     app = Flask(__name__, instance_relative_config=True)
-
+    cors = CORS(app, resources={r"/api/*":{"origins":"http://localhost:3000"
+        }
+    })
     #this is also fine here (Probably)
     from .utils import UserConverter, JobConverter, TimeTableConverter # pylint: disable=import-outside-toplevel
 
