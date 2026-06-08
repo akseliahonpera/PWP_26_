@@ -21,6 +21,7 @@ Populate the database by running the database_ORM.py directly or by using source
 datetime
 flask
 flask_sqlalchemy
+flask_restful
 sqlalchemy_utils
 pymysql
 flasgger

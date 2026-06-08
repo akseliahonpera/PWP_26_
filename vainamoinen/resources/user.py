@@ -159,6 +159,8 @@ class PublicUserItem(Resource):
                   email: lawn@mower.fi
                   description: Yeah I mow lawns very well
                   created: 2026-04-05 10:24:34.875360
+          '404':
+            description: User was not found  
         '''
         valid_true_values = ["true", "yes", "1"]
         include_jobs = False

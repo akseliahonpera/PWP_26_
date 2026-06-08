@@ -26,8 +26,6 @@ def render_owned_profile():
 
     match response.status_code:
         case 200:
-            # TODO: make a pretty menu of all things relevant here,
-            # update user data, delete user, post jobs, route to said jobs, delete jobs etc.
             user_data = response.json()
             profile, jobs, settings = st.tabs(["profile", "jobs", "settings"])
 
@@ -57,6 +55,11 @@ def render_owned_profile():
             ####################################
             ### Settings page                ###
             ####################################
+
+            if settings.button("Edit your information"):
+                edit_user()
+            if settings.button("Delete your account"):
+                delete_user()
         case 403:
             st.write("API authentication key did not have valid permissions for this action")
             st.write("Missing either matching user key or admin key")
@@ -70,13 +73,29 @@ def render_signup():
     if clicked:
         add_user()
 
-def render_user_search(search_query):
+def render_user_search():
     '''
     Rendering function for a user search function
     '''
-    st.header(f"Search result for {search_query}")
-    # TODO: implement
-    # Show user profiles which were found by the query (or just the exact match)
+    st.header("Search bar for users")
+    query =  st.text_input("Type a username here", "")
+    if st.button("Search"):
+        if query == "":
+            st.write("Input a search parameter first")
+        else:
+            response = client.get_user_public(query)
+            match response.status_code:
+                case 200:
+                    c = st.container()
+                    public_profile(response.json(), 1, c)
+                    response = client.get_user_jobs(query)
+                    if response.status_code == 200:
+                        job_c = st.container()
+                        for i, job in enumerate(response.json()):
+                            job_item(job, i, job_c)
+                case 404:
+                    st.write("User not found")
+                    st.write("Try another parameter, only specific matches show up")
 
 def render_all_users():
     '''
@@ -132,6 +151,14 @@ def log_in():
             case _:
                 response.raise_for_status()
 
+def public_profile(user, key, draw_place):
+    '''
+    Streamlit dialog function for a public profile
+    '''
+    st.write(f"Username: {user.get('username')}")
+    st.write(f"Email: {user.get('email')}")
+    st.write(f"Description: {user.get('description')}")
+
 @st.dialog("Create a new user")
 def add_user():
     '''
@@ -167,3 +194,85 @@ def add_user():
                 st.write("Fields were not filled properly")
             case _:
                 response.raise_for_status()
+
+@st.dialog("Edit user information")
+def edit_user():
+    '''
+    Streamlit dialog function for user data edit popup
+    '''
+
+    json = get_user_check(client.get_user(client.user))
+    if json:
+        st.write("Change your account details here")
+        st.write("Pre-filled values are current values")
+        username = st.text_input("Username", client.user)
+        email = st.text_input("Email", json.get('email'))
+        password = st.text_input("Password*", type="password")
+        phone_number = st.text_input("Phone number", json.get('phone_number'))
+        description = st.text_input("Profile description", json.get('description'))
+        address = st.text_input("Address", json.get('address'))
+
+        payload = {
+            "username": username,
+            "password": password,
+            "email": email,
+            "phone_number": phone_number,
+            "description": description,
+            "address": address
+        }
+        if st.button("Update user"):
+            response = client.update_user(payload)
+            match response.status_code:
+                case 204:
+                    st.write("User was updated successfully")
+                case 400:
+                    st.write("Server could not validate the request")
+                case 403:
+                    st.write("Insufficient authorization for this call")
+                case 404:
+                    # Should never happen
+                    st.write("404, user not found")
+                case 409:
+                    st.write("Conflict was raised when executing this action")
+                case 415:
+                    st.write("Provided media was not valid JSON")
+                case _:
+                    st.write("Something went wronk :( (Undefined error)")
+
+
+
+@st.dialog("Delete user")
+def delete_user():
+    '''
+    Streamlit dialog function for user deletion popup
+    '''
+    st.write("Do you wish to delete your account? Deletion is permanent")
+    if st.button("Delete account"):
+        response = client.delete_user(client.user)
+        match response.status_code:
+            case 204:
+                st.write("Account deletion successful")
+                client.set_user("")
+            case 403:
+                st.write("Insuffucient authorization for this action")
+            case 404:
+                # Should never happen
+                st.write("Account not found")
+            case 409:
+                st.write("Conflict was raised during execution of this deletion")
+            case _:
+                st.write("Something wrong :( (undefined error)")
+
+def get_user_check(response):
+    '''
+    Function to get user data and error handling
+    '''
+    match response.status_code:
+        case 200:
+            user_data = response.json()
+            return user_data
+        case 403:
+            st.write("API authentication key did not have valid permissions for this action")
+            st.write("Missing either matching user key or admin key")
+            return None
+

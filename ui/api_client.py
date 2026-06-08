@@ -223,7 +223,7 @@ class APIClient:
         Update a user with new data
         '''
         return requests.put(
-            f"{self.ip}/users/{user['user_name']}",
+            f"{self.ip}/users/{user['username']}",
             json=user,
             headers=self._headers(),
             timeout=5.0
